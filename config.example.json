@@ -1,0 +1,13 @@
+{
+  "port": 3000,
+  "refreshIntervalSeconds": 20,
+  "rotateIntervalSeconds": 15,
+  "espn": {
+    "s2": "YOUR_ESPN_S2_COOKIE_VALUE",
+    "swid": "{YOUR-SWID-COOKIE-VALUE}"
+  },
+  "leagues": [
+    { "platform": "sleeper", "leagueId": "123456789012345678", "name": "Sleeper League Name" },
+    { "platform": "espn", "leagueId": "123456", "season": 2026, "name": "ESPN League Name" }
+  ]
+}

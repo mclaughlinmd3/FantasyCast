@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FantasyCast - Control</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="control.css" />
+</head>
+<body>
+  <div class="control">
+    <header>
+      <h1>FantasyCast</h1>
+      <div id="week-label"></div>
+      <label class="rotate-toggle">
+        <input type="checkbox" id="rotate-checkbox" />
+        Auto-rotate
+      </label>
+    </header>
+    <div id="matchup-list" class="matchup-list"></div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="control.js"></script>
+</body>
+</html>

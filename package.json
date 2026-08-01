@@ -1,0 +1,17 @@
+{
+  "name": "fantasycast",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Live fantasy football scoreboard for a second screen, pulling from Sleeper and ESPN leagues.",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}

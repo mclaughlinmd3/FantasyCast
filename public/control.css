@@ -1,0 +1,86 @@
+.control {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+#week-label {
+  color: var(--muted);
+}
+
+.rotate-toggle {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.league-section {
+  margin-bottom: 24px;
+}
+
+.league-section h2 {
+  font-size: 1rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.matchup-card {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto 1fr;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--panel);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.matchup-card.selected {
+  border-color: var(--accent);
+}
+
+.matchup-card .score {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.matchup-card .team-name:first-of-type {
+  text-align: left;
+}
+
+.matchup-card .team-name:last-of-type {
+  text-align: right;
+}
+
+.matchup-card .sep {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.empty-state {
+  color: var(--muted);
+  padding: 24px 0;
+}

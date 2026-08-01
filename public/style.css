@@ -1,0 +1,18 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #131a22;
+  --accent: #3ddc84;
+  --text: #f4f6f8;
+  --muted: #8a97a3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
