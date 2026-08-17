@@ -48,6 +48,30 @@ function scoringKeyFor(league) {
   return 'pts_std';
 }
 
+// Raw per-category stats (pass_td, rec, sack, etc), used to figure out what
+// specifically happened when a player's points jump - not just by how much.
+// Same undocumented-endpoint caveat as projections: failures degrade to "no
+// stat breakdown" rather than crashing anything.
+async function getStatsByPlayerId(season, week) {
+  try {
+    const positions = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
+    const qs = positions.map((p) => `position[]=${p}`).join('&');
+    const stats = await fetchJson(
+      `/api/sleeper-stats/nfl/${season}/${week}?season_type=regular&${qs}`
+    );
+    const map = new Map();
+    for (const entry of stats) {
+      if (entry.player_id != null && entry.stats) {
+        map.set(String(entry.player_id), entry.stats);
+      }
+    }
+    return map;
+  } catch (err) {
+    console.error('Sleeper stats fetch failed, continuing without play-type detail:', err.message);
+    return new Map();
+  }
+}
+
 export async function getLeagueMatchups(leagueConfig, week) {
   const { leagueId, season, name } = leagueConfig;
   const [league, users, rosters, matchups, playerMap] = await Promise.all([
@@ -59,11 +83,11 @@ export async function getLeagueMatchups(leagueConfig, week) {
   ]);
 
   const scoringKey = scoringKeyFor(league);
-  const projections = await getProjectionsByPlayerId(
-    season || new Date().getFullYear(),
-    week,
-    scoringKey
-  );
+  const resolvedSeason = season || new Date().getFullYear();
+  const [projections, rawStats] = await Promise.all([
+    getProjectionsByPlayerId(resolvedSeason, week, scoringKey),
+    getStatsByPlayerId(resolvedSeason, week),
+  ]);
 
   const userById = new Map(users.map((u) => [u.user_id, u]));
   const rosterById = new Map(rosters.map((r) => [r.roster_id, r]));
@@ -85,14 +109,15 @@ export async function getLeagueMatchups(leagueConfig, week) {
       leagueId,
       leagueName: name || league.name,
       week,
-      teamA: buildTeam(a, rosterById, userById, projections, playerMap),
-      teamB: buildTeam(b, rosterById, userById, projections, playerMap),
+      scoringWeights: league.scoring_settings || null,
+      teamA: buildTeam(a, rosterById, userById, projections, rawStats, playerMap),
+      teamB: buildTeam(b, rosterById, userById, projections, rawStats, playerMap),
     });
   }
   return result;
 }
 
-function buildTeam(entry, rosterById, userById, projections, playerMap) {
+function buildTeam(entry, rosterById, userById, projections, rawStats, playerMap) {
   const roster = rosterById.get(entry.roster_id);
   const user = roster ? userById.get(roster.owner_id) : null;
   const teamName = user?.metadata?.team_name || user?.display_name || `Roster ${entry.roster_id}`;
@@ -111,6 +136,7 @@ function buildTeam(entry, rosterById, userById, projections, playerMap) {
         photo: `https://sleepercdn.com/content/nfl/players/thumb/${playerId}.jpg`,
         live: round(playersPoints[playerId] || 0),
         projected: round(projections.get(playerId) ?? playersPoints[playerId] ?? 0),
+        rawStats: rawStats.get(playerId) || null,
       };
     });
 

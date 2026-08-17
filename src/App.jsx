@@ -31,16 +31,18 @@ export default function App() {
           >
             Preview event
           </button>
-          <button
-            className="settings-btn"
-            onClick={() => setSettingsOpen(true)}
-            aria-label="Settings"
-            title="Choose matchups"
-          >
-            &#9881;
-          </button>
         </header>
       )}
+
+      {/* Always available, even mid-takeover, so matchups can be swapped any time. */}
+      <button
+        className="settings-btn settings-btn-floating"
+        onClick={() => setSettingsOpen(true)}
+        aria-label="Settings"
+        title="Choose matchups"
+      >
+        &#9881;
+      </button>
 
       {error && (
         <div className="app-error">

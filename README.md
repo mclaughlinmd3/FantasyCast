@@ -130,17 +130,42 @@ model (see `src/winProbability.js`).
 Every poll, the app diffs each displayed matchup's starters against the
 previous poll. Any starter whose live points jumped by 4+ (`SIGNIFICANT_DELTA`
 in `src/eventDetection.js`) queues an event. When the grid is idle, the
-highest-point-swing event in the queue takes over the screen: ~10s on the
-player (photo, name, team, point swing), then ~6s on that matchup's summary
-(score + who's still left to play for each team), then back to the grid. If
-more events land while one is playing, they queue and play in order
-(biggest swing first) instead of being dropped.
+highest-point-swing event in the queue takes over the screen:
+
+1. **~10s player takeover** - play-type headline (e.g. "RECEIVING
+   TOUCHDOWN", Sleeper only for now - see below), point swing, player
+   photo/name, and a big team-name callout color-matched to that team's
+   side of the matchup, plus a compact score line for the whole matchup.
+2. **~6s matchup summary** - full score plus who's still left to play on
+   each team.
+3. Back to the grid.
+
+If more events land while one is playing, they queue and play in order
+(biggest swing first) instead of being dropped. The settings gear is
+always on screen (even mid-takeover) so the 4 displayed matchups can be
+changed at any time, not just while looking at the grid.
 
 **Preview button**: since real scoring events require a live game, click
 "Preview event" in the header any time to fire a synthetic one - it uses a
 real starter from one of your currently-selected matchups if data is
 loaded, or built-in demo data if not, so you can see and tune the whole
 flow before the season starts.
+
+## Play-type detection (Sleeper only, for now)
+
+For Sleeper players, the app also fetches raw per-category stats (another
+undocumented endpoint, same caveats as projections) and the league's
+scoring weights, then figures out which stat category contributed the
+most points to a jump - e.g. a TD catch shows up as both `rec` and
+`rec_td`, and the touchdown's higher point value wins, so it's correctly
+labeled "Receiving Touchdown" rather than "Reception."
+
+ESPN's equivalent uses a numeric stat-ID scheme that isn't reliably
+reconstructable without live data to check against, so ESPN events
+currently skip the play-type headline entirely and just show the point
+swing - safer than risking a wrong label. Once you've got real ESPN data
+next week, this is the first thing worth verifying so that mapping can be
+filled in.
 
 ## Known limitations
 
@@ -150,3 +175,4 @@ flow before the season starts.
 - There's no persistent history across a full-page reload, so a big play
   that happened right before you reload the page won't retroactively
   trigger a takeover.
+- Play-type headlines only appear for Sleeper events (see above).

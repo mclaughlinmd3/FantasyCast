@@ -3,6 +3,16 @@
 
 const PREVIEW_DELTA = 8.4;
 
+// Randomized so repeated previews also show the graceful fallback (null)
+// that real ESPN events currently use, alongside the labeled Sleeper-style
+// case.
+const PREVIEW_PLAY_TYPES = [
+  'Receiving Touchdown',
+  'Rushing Touchdown',
+  'Passing Touchdown',
+  null,
+];
+
 function round(n) {
   return Math.round(n * 100) / 100;
 }
@@ -73,5 +83,6 @@ export function createPreviewEvent(matchups, selectedIds) {
     matchup: updatedMatchup,
     delta: PREVIEW_DELTA,
     newLive: round(player.live + PREVIEW_DELTA),
+    playType: PREVIEW_PLAY_TYPES[Math.floor(Math.random() * PREVIEW_PLAY_TYPES.length)],
   };
 }

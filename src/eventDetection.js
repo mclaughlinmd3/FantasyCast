@@ -12,6 +12,53 @@ function round(n) {
   return Math.round(n * 100) / 100;
 }
 
+// Sleeper-only for now: ESPN's raw stats use a numeric stat-ID scheme that
+// isn't reliably reconstructable from memory, so ESPN events just skip the
+// headline rather than risk labeling a play wrong.
+const SLEEPER_STAT_LABELS = {
+  pass_td: 'Passing Touchdown',
+  rush_td: 'Rushing Touchdown',
+  rec_td: 'Receiving Touchdown',
+  pass_2pt: '2-Point Conversion',
+  rush_2pt: '2-Point Conversion',
+  rec_2pt: '2-Point Conversion',
+  rec: 'Reception',
+  def_td: 'Defensive Touchdown',
+  fum_rec_td: 'Fumble Return TD',
+  int_td: 'Pick-Six',
+  sack: 'Sack',
+  int: 'Interception',
+  ff: 'Forced Fumble',
+  fum_rec: 'Fumble Recovery',
+  safe: 'Safety',
+  blk_kick: 'Blocked Kick',
+  fg_made: 'Field Goal',
+  xp_made: 'Extra Point',
+};
+
+// Finds which raw stat category contributed the most fantasy points to a
+// player's live-score jump (e.g. a TD catch shows up as both `rec` and
+// `rec_td` - the touchdown's point value dominates, so it wins over "just"
+// a reception). Returns null if there's not enough data to tell.
+function describePlayType(prevStats, currentStats, weights) {
+  if (!prevStats || !currentStats || !weights) return null;
+
+  let bestKey = null;
+  let bestContribution = 0;
+  for (const key of Object.keys(currentStats)) {
+    const delta = (currentStats[key] || 0) - (prevStats[key] || 0);
+    if (delta <= 0) continue;
+    const weight = weights[key] || 0;
+    const contribution = delta * weight;
+    if (contribution > bestContribution) {
+      bestContribution = contribution;
+      bestKey = key;
+    }
+  }
+
+  return bestKey ? SLEEPER_STAT_LABELS[bestKey] || null : null;
+}
+
 export function detectScoringEvents(prevMatchupsById, currentMatchups, selectedIds) {
   const events = [];
 
@@ -42,6 +89,7 @@ export function detectScoringEvents(prevMatchupsById, currentMatchups, selectedI
             matchup,
             delta,
             newLive: player.live,
+            playType: describePlayType(prevPlayer.rawStats, player.rawStats, matchup.scoringWeights),
           });
         }
       }

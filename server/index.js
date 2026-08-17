@@ -69,6 +69,21 @@ app.get('/api/sleeper-projections/*', async (req, res) => {
   }
 });
 
+// Same undocumented path family as projections, but for actual (live) stats.
+app.get('/api/sleeper-stats/*', async (req, res) => {
+  const rest = req.params[0];
+  const qs = buildQueryString(req.query);
+  const url = `https://api.sleeper.app/stats/${rest}${qs ? `?${qs}` : ''}`;
+
+  try {
+    const upstream = await fetch(url);
+    const body = await upstream.text();
+    res.status(upstream.status).type('application/json').send(body);
+  } catch (err) {
+    res.status(502).json({ error: `Sleeper stats request failed: ${err.message}` });
+  }
+});
+
 // ESPN requires the espn_s2/SWID auth cookies, which must never reach the
 // browser, so this route injects them server-side.
 app.get('/api/espn/:leagueId', async (req, res) => {
