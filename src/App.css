@@ -43,6 +43,11 @@
   border-color: var(--muted);
 }
 
+.preview-btn-active {
+  color: var(--good);
+  border-color: var(--good);
+}
+
 .settings-btn {
   background: transparent;
   border: 1px solid var(--panel-border);

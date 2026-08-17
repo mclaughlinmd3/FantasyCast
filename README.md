@@ -140,6 +140,15 @@ position-aware stat line (e.g. "8 REC · 112 YD · 1 TD" for a receiver,
 same reason it doesn't get play-type headlines (see below); it still
 shows photo/name/points.
 
+**Before the season starts** there's nothing to show here - real players
+only count as "active" once their actual NFL game is underway, so this
+section legitimately shows "No active players" and 0.00 scores until then.
+To check that the layout/photos/stat lines actually work without waiting
+for a live game, click "Simulate active players" in the header - it
+forces your real starters to show as active (using their real, currently
+0, stats) without touching any actual data. Click it again to turn it
+off.
+
 ## Known rough edges
 
 - **ESPN player-level data is reverse-engineered.** ESPN has no public API

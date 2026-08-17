@@ -4,6 +4,7 @@ import { useSelectedMatchups } from './hooks/useSelectedMatchups.js';
 import { useScoringEvents } from './hooks/useScoringEvents.js';
 import { useGoodGuys } from './hooks/useGoodGuys.js';
 import { createPreviewEvent } from './demoData.js';
+import { simulateActivePlayers } from './simulateActivePlayers.js';
 import Grid from './components/Grid.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import EventTakeover from './components/EventTakeover.jsx';
@@ -29,6 +30,8 @@ export default function App() {
     summaryDurationMs: summaryDurationSeconds != null ? summaryDurationSeconds * 1000 : undefined,
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [simulateActive, setSimulateActive] = useState(false);
+  const gridMatchups = simulateActive ? simulateActivePlayers(selectedMatchups) : selectedMatchups;
 
   return (
     <div className="app">
@@ -39,6 +42,13 @@ export default function App() {
           <span className="app-updated">
             {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : ''}
           </span>
+          <button
+            className={`preview-btn${simulateActive ? ' preview-btn-active' : ''}`}
+            onClick={() => setSimulateActive((v) => !v)}
+            title="Pretend every displayed starter is currently playing, to preview the active-players list before real games start"
+          >
+            {simulateActive ? 'Simulating active players' : 'Simulate active players'}
+          </button>
           <button
             className="preview-btn"
             onClick={() => injectEvent(createPreviewEvent(matchups, selectedIds))}
@@ -68,7 +78,7 @@ export default function App() {
 
       {!loading && !error && phase === 'grid' && (
         <Grid
-          matchups={selectedMatchups}
+          matchups={gridMatchups}
           onRemove={toggle}
           onOpenSettings={() => setSettingsOpen(true)}
           goodGuyIds={goodGuyIds}
