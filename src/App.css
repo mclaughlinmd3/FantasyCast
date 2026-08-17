@@ -121,7 +121,7 @@
 }
 
 .teams {
-  margin-top: 0.4vh;
+  margin-top: 0.1vh;
 }
 
 .matchup-card-header {
@@ -166,8 +166,8 @@
 }
 
 .team-name {
-  font-weight: 600;
-  font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+  font-weight: 700;
+  font-size: clamp(1.15rem, 2vw, 1.8rem);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -175,8 +175,8 @@
 
 .team-manager {
   color: var(--muted);
-  font-size: clamp(0.65rem, 0.85vw, 0.8rem);
-  margin-top: 0.15rem;
+  font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+  margin-top: 0.2rem;
 }
 
 .team-score {
@@ -206,7 +206,7 @@
 }
 
 .win-prob {
-  margin-top: 0.6vh;
+  margin-top: 0.3vh;
 }
 
 .win-prob-labels {
@@ -243,7 +243,7 @@
   flex: 1;
   display: flex;
   gap: 1.2rem;
-  margin-top: 1.1vh;
+  margin-top: 0.6vh;
   min-height: 0;
   overflow: hidden;
 }
@@ -267,7 +267,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.8vh;
+  gap: 0.5vh;
 }
 
 .active-players-list li {
