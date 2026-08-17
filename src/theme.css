@@ -8,6 +8,10 @@
   --accent-dim: #245a3d;
   --team-b: #4d8dff;
   --team-b-dim: #223a63;
+  --good: #3ddc84;
+  --good-dim: #245a3d;
+  --bad: #ff5d5d;
+  --bad-dim: #4a2222;
   --danger: #ff5d5d;
   --font: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }

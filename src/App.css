@@ -111,9 +111,12 @@
   padding: 1.1vh 1.4vw;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   min-height: 0;
   min-width: 0;
+}
+
+.teams {
+  margin-top: 0.4vh;
 }
 
 .matchup-card-header {
@@ -178,12 +181,17 @@
   margin-top: 0.3vh;
 }
 
-.team-a .team-score {
-  color: var(--accent);
+.team-a .team-score,
+.team-good .team-score {
+  color: var(--good);
 }
 
 .team-b .team-score {
   color: var(--team-b);
+}
+
+.team-bad .team-score {
+  color: var(--bad);
 }
 
 .vs {
@@ -213,12 +221,83 @@
   background: var(--panel-border);
 }
 
-.win-prob-fill-a {
-  background: var(--accent);
+.win-prob-fill-a,
+.win-prob-fill-good {
+  background: var(--good);
 }
 
 .win-prob-fill-b {
   background: var(--team-b);
+}
+
+.win-prob-fill-bad {
+  background: var(--bad);
+}
+
+.active-players-row {
+  flex: 1;
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 1.1vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.active-players {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.active-players-empty {
+  color: var(--muted);
+  font-size: clamp(0.65rem, 0.85vw, 0.8rem);
+  font-style: italic;
+}
+
+.active-players-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35vh;
+}
+
+.active-players-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: clamp(0.68rem, 0.95vw, 0.88rem);
+}
+
+.active-player-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.active-player-pts {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.active-players.team-a .active-player-pts,
+.active-players.team-good .active-player-pts {
+  color: var(--good);
+}
+
+.active-players.team-b .active-player-pts {
+  color: var(--team-b);
+}
+
+.active-players.team-bad .active-player-pts {
+  color: var(--bad);
 }
 
 /* Event takeover */
@@ -235,12 +314,17 @@
   animation: takeover-in 0.4s ease-out;
 }
 
-.event-takeover.team-a {
-  background: radial-gradient(circle at 50% 40%, var(--accent-dim) 0%, var(--bg) 65%);
+.event-takeover.team-a,
+.event-takeover.team-good {
+  background: radial-gradient(circle at 50% 40%, var(--good-dim) 0%, var(--bg) 65%);
 }
 
 .event-takeover.team-b {
   background: radial-gradient(circle at 50% 40%, var(--team-b-dim) 0%, var(--bg) 65%);
+}
+
+.event-takeover.team-bad {
+  background: radial-gradient(circle at 50% 40%, var(--bad-dim) 0%, var(--bg) 65%);
 }
 
 @keyframes takeover-in {
@@ -304,12 +388,17 @@
   margin-top: 0.3vh;
 }
 
-.event-team-name.team-a {
-  color: var(--accent);
+.event-team-name.team-a,
+.event-team-name.team-good {
+  color: var(--good);
 }
 
 .event-team-name.team-b {
   color: var(--team-b);
+}
+
+.event-team-name.team-bad {
+  color: var(--bad);
 }
 
 .event-meta {
@@ -335,12 +424,17 @@
   font-variant-numeric: tabular-nums;
 }
 
-.event-matchup-score .team-a {
-  color: var(--accent);
+.event-matchup-score .team-a,
+.event-matchup-score .team-good {
+  color: var(--good);
 }
 
 .event-matchup-score .team-b {
   color: var(--team-b);
+}
+
+.event-matchup-score .team-bad {
+  color: var(--bad);
 }
 
 /* Matchup summary */
@@ -386,12 +480,17 @@
   margin: 0.3vh 0 1.5vh;
 }
 
-.summary-team-col.team-a .summary-team-score {
-  color: var(--accent);
+.summary-team-col.team-a .summary-team-score,
+.summary-team-col.team-good .summary-team-score {
+  color: var(--good);
 }
 
 .summary-team-col.team-b .summary-team-score {
   color: var(--team-b);
+}
+
+.summary-team-col.team-bad .summary-team-score {
+  color: var(--bad);
 }
 
 .summary-remaining-label {
@@ -531,7 +630,7 @@
   min-width: 0;
 }
 
-.settings-team.team-b {
+.settings-team.pos-b {
   justify-content: flex-end;
   text-align: right;
 }
@@ -542,11 +641,11 @@
   white-space: nowrap;
 }
 
-.settings-team.team-a .settings-team-name {
+.settings-team.pos-a .settings-team-name {
   order: 1;
 }
 
-.settings-team.team-a .settings-team-score {
+.settings-team.pos-a .settings-team-score {
   order: 2;
 }
 
@@ -556,12 +655,33 @@
   flex-shrink: 0;
 }
 
-.settings-team.team-a .settings-team-score {
-  color: var(--accent);
+.settings-team.team-a .settings-team-score,
+.settings-team.team-good .settings-team-score {
+  color: var(--good);
 }
 
 .settings-team.team-b .settings-team-score {
   color: var(--team-b);
+}
+
+.settings-team.team-bad .settings-team-score {
+  color: var(--bad);
+}
+
+.settings-section {
+  margin-bottom: 1.75rem;
+}
+
+.settings-section-title {
+  font-size: 1rem;
+  margin: 0 0 0.4rem;
+}
+
+.settings-hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 0 0 0.75rem;
 }
 
 .settings-sep {

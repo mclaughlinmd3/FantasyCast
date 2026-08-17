@@ -118,6 +118,21 @@ app.get('/api/espn/:leagueId', async (req, res) => {
   }
 });
 
+// ESPN's public (non-fantasy, no-auth) scoreboard API - used only to know
+// which NFL games are currently in progress, so the grid can show "active"
+// players. Different host/API entirely from the fantasy endpoints above.
+app.get('/api/nfl-scoreboard', async (req, res) => {
+  try {
+    const upstream = await fetch(
+      'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'
+    );
+    const body = await upstream.text();
+    res.status(upstream.status).type('application/json').send(body);
+  } catch (err) {
+    res.status(502).json({ error: `NFL scoreboard request failed: ${err.message}` });
+  }
+});
+
 const distPath = path.join(__dirname, '..', 'dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));

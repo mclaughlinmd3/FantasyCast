@@ -1,9 +1,10 @@
 # FantasyCast
 
 A live fantasy football scoreboard for a second screen. Shows up to 4
-matchups at once - team names, live scores, and a win-probability bar
-computed from current score plus each team's remaining projected points -
-pulled from Sleeper and private ESPN leagues.
+matchups at once - team names, live scores, a win-probability bar computed
+from current score plus each team's remaining projected points, and each
+team's currently-active players - pulled from Sleeper and private ESPN
+leagues.
 
 ## How it's built
 
@@ -110,6 +111,28 @@ reads as close, a small lead with nobody left to play reads as
 near-certain. It's a glanceable estimate for a TV screen, not a rigorous
 model (see `src/winProbability.js`).
 
+## Good guys / bad guys
+
+Click the settings gear and open "Your teams" to mark which teams are
+yours (and your roommates') across any league. A matchup where exactly one
+side is marked colors that side green and the opponent red; a matchup
+where both or neither side is marked (e.g. two roommates playing each
+other) stays the neutral green/blue split. This applies everywhere - the
+grid, the event takeover, and the matchup summary.
+
+## Active players
+
+Each matchup card shows up to 4 currently-active players per team (sorted
+by live points, so the top performers show first if more than 4 are
+playing), filling the space below the score/win-probability bar instead of
+leaving it empty. "Active" means their real NFL game is currently in
+progress - fantasy point totals alone can't tell a bye week or "hasn't
+played yet" from "playing right now," so this is pulled from ESPN's
+separate public game-schedule API (unauthenticated, not the fantasy API)
+and matched to each player by their NFL team. Before any games kick off,
+or for players not currently in a live game, the card shows "No active
+players" for that team rather than guessing.
+
 ## Known rough edges
 
 - **ESPN player-level data is reverse-engineered.** ESPN has no public API
@@ -121,6 +144,10 @@ model (see `src/winProbability.js`).
 - **Sleeper projections come from an undocumented endpoint.** If it ever
   changes shape, projections silently stop populating rather than crashing
   the app (same score-only fallback as above).
+- **ESPN's NFL-team mapping (for the active-players feature) is also
+  best-effort**, reconstructed from memory since ESPN doesn't document it.
+  If ESPN players never show as "active" even during a live game, this
+  mapping (`PRO_TEAMS` in `src/api/espn.js`) is the first place to check.
 - A league that fails to fetch on a given poll (bad ID, expired ESPN
   cookie, transient network blip) is skipped for that cycle and logged to
   the browser console - it doesn't take down the other leagues.

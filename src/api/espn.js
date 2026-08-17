@@ -40,14 +40,14 @@ export async function getLeagueMatchups(leagueConfig, week) {
       leagueId,
       leagueName,
       week,
-      teamA: buildTeam(matchup.home, teamsById, week),
-      teamB: buildTeam(matchup.away, teamsById, week),
+      teamA: buildTeam(matchup.home, leagueId, teamsById, week),
+      teamB: buildTeam(matchup.away, leagueId, teamsById, week),
     });
   }
   return result;
 }
 
-function buildTeam(side, teamsById, week) {
+function buildTeam(side, leagueId, teamsById, week) {
   const team = teamsById.get(side.teamId);
   const wins = team?.record?.overall?.wins ?? 0;
   const losses = team?.record?.overall?.losses ?? 0;
@@ -60,6 +60,7 @@ function buildTeam(side, teamsById, week) {
     .map((e) => buildPlayer(e, week));
 
   return {
+    id: `espn-${leagueId}-${side.teamId}`,
     name: team ? `${team.location} ${team.nickname}`.trim() : `Team ${side.teamId}`,
     manager: null,
     score: round(side.totalPoints || 0),
@@ -81,9 +82,11 @@ function buildPlayer(entry, week) {
     id: String(player?.id ?? entry.playerId ?? ''),
     name: player?.fullName || 'Unknown Player',
     position: positionAbbrev(player?.defaultPositionId),
+    nflTeam: proTeamAbbrev(player?.proTeamId),
     photo: player?.id ? `https://a.espncdn.com/i/headshots/nfl/players/full/${player.id}.png` : null,
     live: round(live),
     projected: round(projected?.appliedTotal ?? live),
+    isActive: false, // filled in by usePolling once NFL game status is fetched
   };
 }
 
@@ -98,6 +101,22 @@ const POSITIONS = {
 
 function positionAbbrev(defaultPositionId) {
   return POSITIONS[defaultPositionId] || null;
+}
+
+// Best-effort - ESPN has no public docs for this mapping, so it's
+// reconstructed from memory/community reverse-engineering. Only used to
+// match a player to their NFL game's live status; a wrong or missing entry
+// just means that one player won't show up as "active," nothing breaks.
+const PRO_TEAMS = {
+  1: 'ATL', 2: 'BUF', 3: 'CHI', 4: 'CIN', 5: 'CLE', 6: 'DAL', 7: 'DEN',
+  8: 'DET', 9: 'GB', 10: 'TEN', 11: 'IND', 12: 'KC', 13: 'LV', 14: 'LAR',
+  15: 'MIA', 16: 'MIN', 17: 'NE', 18: 'NO', 19: 'NYG', 20: 'NYJ', 21: 'PHI',
+  22: 'ARI', 23: 'PIT', 24: 'LAC', 25: 'SF', 26: 'SEA', 27: 'TB', 28: 'WSH',
+  29: 'CAR', 30: 'JAX', 33: 'BAL', 34: 'HOU',
+};
+
+function proTeamAbbrev(proTeamId) {
+  return PRO_TEAMS[proTeamId] || null;
 }
 
 function round(n) {

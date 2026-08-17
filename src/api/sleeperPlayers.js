@@ -37,6 +37,7 @@ export async function getPlayerMap() {
     players[id] = {
       name: p.full_name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || id,
       position: p.position || null,
+      team: p.team || null,
     };
   }
 

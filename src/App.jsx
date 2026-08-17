@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { usePolling } from './hooks/usePolling.js';
 import { useSelectedMatchups } from './hooks/useSelectedMatchups.js';
 import { useScoringEvents } from './hooks/useScoringEvents.js';
+import { useGoodGuys } from './hooks/useGoodGuys.js';
 import { createPreviewEvent } from './demoData.js';
 import Grid from './components/Grid.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
@@ -21,6 +22,7 @@ export default function App() {
     summaryDurationSeconds,
   } = usePolling();
   const { selectedIds, selectedMatchups, toggle } = useSelectedMatchups(matchups);
+  const { goodGuyIds, toggle: toggleGoodGuy } = useGoodGuys();
   const { phase, currentEvent, injectEvent } = useScoringEvents(matchups, selectedIds, {
     thresholdPoints: eventThresholdPoints,
     eventDurationMs: eventDurationSeconds != null ? eventDurationSeconds * 1000 : undefined,
@@ -69,16 +71,23 @@ export default function App() {
           matchups={selectedMatchups}
           onRemove={toggle}
           onOpenSettings={() => setSettingsOpen(true)}
+          goodGuyIds={goodGuyIds}
         />
       )}
-      {phase === 'event' && currentEvent && <EventTakeover event={currentEvent} />}
-      {phase === 'summary' && currentEvent && <MatchupSummary matchup={currentEvent.matchup} />}
+      {phase === 'event' && currentEvent && (
+        <EventTakeover event={currentEvent} goodGuyIds={goodGuyIds} />
+      )}
+      {phase === 'summary' && currentEvent && (
+        <MatchupSummary matchup={currentEvent.matchup} goodGuyIds={goodGuyIds} />
+      )}
 
       {settingsOpen && (
         <SettingsPanel
           matchups={matchups}
           selectedIds={selectedIds}
           onToggle={toggle}
+          goodGuyIds={goodGuyIds}
+          onToggleGoodGuy={toggleGoodGuy}
           onClose={() => setSettingsOpen(false)}
         />
       )}

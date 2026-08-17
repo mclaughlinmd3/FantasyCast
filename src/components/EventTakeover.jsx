@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getMatchupRoles } from '../teamRoles.js';
 
 function initials(name) {
   return name
@@ -8,13 +9,18 @@ function initials(name) {
     .slice(0, 2);
 }
 
-export default function EventTakeover({ event }) {
+export default function EventTakeover({ event, goodGuyIds }) {
   const [photoFailed, setPhotoFailed] = useState(false);
   const showPhoto = event.playerPhoto && !photoFailed;
-  const isTeamA = event.matchup.teamA.name === event.teamName;
+
+  const roles = goodGuyIds ? getMatchupRoles(event.matchup, goodGuyIds) : { teamA: 'a', teamB: 'b' };
+  const isTeamA = event.teamId
+    ? event.matchup.teamA.id === event.teamId
+    : event.matchup.teamA.name === event.teamName;
+  const scoringRole = isTeamA ? roles.teamA : roles.teamB;
 
   return (
-    <div className={`event-takeover ${isTeamA ? 'team-a' : 'team-b'}`}>
+    <div className={`event-takeover team-${scoringRole}`}>
       {event.playType && <div className="event-play-type">{event.playType}</div>}
       <div className="event-swing">+{event.delta.toFixed(1)} PTS</div>
 
@@ -32,20 +38,20 @@ export default function EventTakeover({ event }) {
       </div>
       <div className="event-player-name">{event.playerName}</div>
 
-      <div className={`event-team-name ${isTeamA ? 'team-a' : 'team-b'}`}>{event.teamName}</div>
+      <div className={`event-team-name team-${scoringRole}`}>{event.teamName}</div>
       <div className="event-meta">
         {event.playerPosition ? `${event.playerPosition} · ` : ''}
         {event.matchup.leagueName}
       </div>
 
       <div className="event-matchup-score">
-        <span className="team-a">{event.matchup.teamA.name}</span>
+        <span className={`team-${roles.teamA}`}>{event.matchup.teamA.name}</span>
         <span className="event-matchup-score-values">
-          <span className="team-a">{event.matchup.teamA.score.toFixed(2)}</span>
+          <span className={`team-${roles.teamA}`}>{event.matchup.teamA.score.toFixed(2)}</span>
           {' – '}
-          <span className="team-b">{event.matchup.teamB.score.toFixed(2)}</span>
+          <span className={`team-${roles.teamB}`}>{event.matchup.teamB.score.toFixed(2)}</span>
         </span>
-        <span className="team-b">{event.matchup.teamB.name}</span>
+        <span className={`team-${roles.teamB}`}>{event.matchup.teamB.name}</span>
       </div>
     </div>
   );

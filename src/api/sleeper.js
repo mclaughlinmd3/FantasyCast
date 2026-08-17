@@ -110,14 +110,14 @@ export async function getLeagueMatchups(leagueConfig, week) {
       leagueName: name || league.name,
       week,
       scoringWeights: league.scoring_settings || null,
-      teamA: buildTeam(a, rosterById, userById, projections, rawStats, playerMap),
-      teamB: buildTeam(b, rosterById, userById, projections, rawStats, playerMap),
+      teamA: buildTeam(a, leagueId, rosterById, userById, projections, rawStats, playerMap),
+      teamB: buildTeam(b, leagueId, rosterById, userById, projections, rawStats, playerMap),
     });
   }
   return result;
 }
 
-function buildTeam(entry, rosterById, userById, projections, rawStats, playerMap) {
+function buildTeam(entry, leagueId, rosterById, userById, projections, rawStats, playerMap) {
   const roster = rosterById.get(entry.roster_id);
   const user = roster ? userById.get(roster.owner_id) : null;
   const teamName = user?.metadata?.team_name || user?.display_name || `Roster ${entry.roster_id}`;
@@ -133,14 +133,17 @@ function buildTeam(entry, rosterById, userById, projections, rawStats, playerMap
         id: playerId,
         name: info?.name || playerId,
         position: info?.position || null,
+        nflTeam: info?.team || null,
         photo: `https://sleepercdn.com/content/nfl/players/thumb/${playerId}.jpg`,
         live: round(playersPoints[playerId] || 0),
         projected: round(projections.get(playerId) ?? playersPoints[playerId] ?? 0),
         rawStats: rawStats.get(playerId) || null,
+        isActive: false, // filled in by usePolling once NFL game status is fetched
       };
     });
 
   return {
+    id: `sleeper-${leagueId}-${entry.roster_id}`,
     name: teamName,
     manager: user?.display_name || null,
     score: round(entry.points || 0),

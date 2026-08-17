@@ -91,6 +91,7 @@ export function detectScoringEvents(
             playerPhoto: player.photo,
             playerPosition: player.position,
             teamName: team.name,
+            teamId: team.id,
             matchupId: matchup.id,
             matchup,
             delta,

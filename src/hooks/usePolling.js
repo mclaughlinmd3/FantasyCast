@@ -1,8 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as sleeper from '../api/sleeper.js';
 import * as espn from '../api/espn.js';
+import { getTeamGameStatus } from '../api/nflSchedule.js';
 
 const DEFAULT_REFRESH_SECONDS = 30;
+
+function annotateActivePlayers(matchup, gameStatusByTeam) {
+  const annotateTeam = (team) => ({
+    ...team,
+    starters: team.starters.map((p) => ({
+      ...p,
+      isActive: p.nflTeam ? gameStatusByTeam.get(p.nflTeam) === 'in' : false,
+    })),
+  });
+  return { ...matchup, teamA: annotateTeam(matchup.teamA), teamB: annotateTeam(matchup.teamB) };
+}
 
 export function usePolling() {
   const [config, setConfig] = useState(null);
@@ -23,23 +35,26 @@ export function usePolling() {
     }
     const currentWeek = weekRef.current;
 
-    const perLeagueResults = await Promise.all(
-      leagues.map(async (league) => {
-        try {
-          if (league.platform === 'sleeper') {
-            return await sleeper.getLeagueMatchups(league, currentWeek);
+    const [perLeagueResults, gameStatusByTeam] = await Promise.all([
+      Promise.all(
+        leagues.map(async (league) => {
+          try {
+            if (league.platform === 'sleeper') {
+              return await sleeper.getLeagueMatchups(league, currentWeek);
+            }
+            if (league.platform === 'espn') {
+              return await espn.getLeagueMatchups(league, currentWeek);
+            }
+            console.error(`Unknown platform "${league.platform}" for league ${league.leagueId}`);
+            return [];
+          } catch (err) {
+            console.error(`Failed to fetch league ${league.name}:`, err.message);
+            return null; // null = keep whatever we had for this league last cycle
           }
-          if (league.platform === 'espn') {
-            return await espn.getLeagueMatchups(league, currentWeek);
-          }
-          console.error(`Unknown platform "${league.platform}" for league ${league.leagueId}`);
-          return [];
-        } catch (err) {
-          console.error(`Failed to fetch league ${league.name}:`, err.message);
-          return null; // null = keep whatever we had for this league last cycle
-        }
-      })
-    );
+        })
+      ),
+      getTeamGameStatus(),
+    ]);
 
     setMatchups((prev) => {
       const flattened = [];
@@ -50,7 +65,7 @@ export function usePolling() {
             ...prev.filter((m) => m.leagueId === league.leagueId && m.platform === league.platform)
           );
         } else {
-          flattened.push(...leagueResult);
+          flattened.push(...leagueResult.map((m) => annotateActivePlayers(m, gameStatusByTeam)));
         }
       });
       return flattened;
