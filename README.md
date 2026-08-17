@@ -125,10 +125,28 @@ model (see `src/winProbability.js`).
   cookie, transient network blip) is skipped for that cycle and logged to
   the browser console - it doesn't take down the other leagues.
 
-## What's next
+## Event takeover
 
-This is phase 1 (the grid + win-probability bars). Event detection (diffing
-player stats between polls to catch big scoring plays) and the takeover
-screen are intentionally not built yet - the data model already carries
-per-player live/projected points so that phase can slot in without
-reshaping this one.
+Every poll, the app diffs each displayed matchup's starters against the
+previous poll. Any starter whose live points jumped by 4+ (`SIGNIFICANT_DELTA`
+in `src/eventDetection.js`) queues an event. When the grid is idle, the
+highest-point-swing event in the queue takes over the screen: ~10s on the
+player (photo, name, team, point swing), then ~6s on that matchup's summary
+(score + who's still left to play for each team), then back to the grid. If
+more events land while one is playing, they queue and play in order
+(biggest swing first) instead of being dropped.
+
+**Preview button**: since real scoring events require a live game, click
+"Preview event" in the header any time to fire a synthetic one - it uses a
+real starter from one of your currently-selected matchups if data is
+loaded, or built-in demo data if not, so you can see and tune the whole
+flow before the season starts.
+
+## Known limitations
+
+- Event detection only watches the 4 currently-displayed matchups, not
+  every matchup across all your leagues - swap a matchup into the grid and
+  its scoring starts counting on the next poll after that.
+- There's no persistent history across a full-page reload, so a big play
+  that happened right before you reload the page won't retroactively
+  trigger a takeover.

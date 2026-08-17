@@ -27,6 +27,22 @@
   margin-left: auto;
 }
 
+.preview-btn {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 0 0.8rem;
+  height: 2.2rem;
+  font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+  cursor: pointer;
+}
+
+.preview-btn:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
 .settings-btn {
   background: transparent;
   border: 1px solid var(--panel-border);
@@ -194,6 +210,162 @@
 
 .win-prob-fill-b {
   background: var(--team-b);
+}
+
+/* Event takeover */
+
+.event-takeover {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1vh;
+  background: radial-gradient(circle at 50% 40%, var(--accent-dim) 0%, var(--bg) 65%);
+  border-radius: 16px;
+  text-align: center;
+  animation: takeover-in 0.4s ease-out;
+}
+
+@keyframes takeover-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.event-swing {
+  color: var(--accent);
+  font-weight: 800;
+  font-size: clamp(2rem, 5vw, 4rem);
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 40px var(--accent-dim);
+}
+
+.event-photo-wrap {
+  margin: 1vh 0;
+}
+
+.event-photo {
+  width: clamp(8rem, 16vw, 14rem);
+  height: clamp(8rem, 16vw, 14rem);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--accent);
+  background: var(--panel);
+}
+
+.event-photo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.event-player-name {
+  font-size: clamp(1.8rem, 3.5vw, 3rem);
+  font-weight: 700;
+}
+
+.event-meta {
+  color: var(--text);
+  opacity: 0.8;
+  font-size: clamp(1rem, 1.6vw, 1.4rem);
+}
+
+.event-league {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: clamp(0.75rem, 1vw, 0.95rem);
+  margin-top: 1vh;
+}
+
+/* Matchup summary */
+
+.summary-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2vh;
+  animation: takeover-in 0.4s ease-out;
+}
+
+.summary-league {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+}
+
+.summary-teams {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4vw;
+}
+
+.summary-team-col {
+  width: 24vw;
+  text-align: center;
+}
+
+.summary-team-name {
+  font-weight: 600;
+  font-size: clamp(1.1rem, 1.8vw, 1.6rem);
+}
+
+.summary-team-score {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  margin: 0.3vh 0 1.5vh;
+}
+
+.summary-team-col.team-a .summary-team-score {
+  color: var(--accent);
+}
+
+.summary-team-col.team-b .summary-team-score {
+  color: var(--team-b);
+}
+
+.summary-remaining-label {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: clamp(0.65rem, 0.85vw, 0.8rem);
+  margin-bottom: 0.5vh;
+}
+
+.summary-remaining-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: clamp(0.9rem, 1.3vw, 1.15rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+}
+
+.summary-remaining-none {
+  color: var(--muted);
+  font-size: clamp(0.9rem, 1.3vw, 1.15rem);
+}
+
+.summary-vs {
+  color: var(--muted);
+  font-size: clamp(0.8rem, 1vw, 1rem);
+  margin-top: 3vh;
+  flex-shrink: 0;
 }
 
 /* Settings panel */
