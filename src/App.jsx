@@ -10,9 +10,22 @@ import MatchupSummary from './components/MatchupSummary.jsx';
 import './App.css';
 
 export default function App() {
-  const { matchups, week, lastUpdated, error, loading } = usePolling();
+  const {
+    matchups,
+    week,
+    lastUpdated,
+    error,
+    loading,
+    eventThresholdPoints,
+    eventDurationSeconds,
+    summaryDurationSeconds,
+  } = usePolling();
   const { selectedIds, selectedMatchups, toggle } = useSelectedMatchups(matchups);
-  const { phase, currentEvent, injectEvent } = useScoringEvents(matchups, selectedIds);
+  const { phase, currentEvent, injectEvent } = useScoringEvents(matchups, selectedIds, {
+    thresholdPoints: eventThresholdPoints,
+    eventDurationMs: eventDurationSeconds != null ? eventDurationSeconds * 1000 : undefined,
+    summaryDurationMs: summaryDurationSeconds != null ? summaryDurationSeconds * 1000 : undefined,
+  });
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (

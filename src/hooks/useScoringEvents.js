@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { detectScoringEvents, EVENT_DURATION_MS, SUMMARY_DURATION_MS } from '../eventDetection.js';
+import {
+  detectScoringEvents,
+  DEFAULT_SIGNIFICANT_DELTA,
+  DEFAULT_EVENT_DURATION_MS,
+  DEFAULT_SUMMARY_DURATION_MS,
+} from '../eventDetection.js';
 
 const MAX_QUEUE = 10; // defensive cap, not expected to matter in normal use
 
-export function useScoringEvents(matchups, selectedIds) {
+export function useScoringEvents(matchups, selectedIds, options = {}) {
+  const thresholdPoints = options.thresholdPoints ?? DEFAULT_SIGNIFICANT_DELTA;
+  const eventDurationMs = options.eventDurationMs ?? DEFAULT_EVENT_DURATION_MS;
+  const summaryDurationMs = options.summaryDurationMs ?? DEFAULT_SUMMARY_DURATION_MS;
+
   const prevMatchupsRef = useRef(new Map());
   const [queue, setQueue] = useState([]);
   const [phase, setPhase] = useState('grid'); // 'grid' | 'event' | 'summary'
@@ -15,12 +24,17 @@ export function useScoringEvents(matchups, selectedIds) {
   // very next poll instead of needing to "warm up" first).
   useEffect(() => {
     if (matchups.length === 0) return;
-    const newEvents = detectScoringEvents(prevMatchupsRef.current, matchups, selectedIds);
+    const newEvents = detectScoringEvents(
+      prevMatchupsRef.current,
+      matchups,
+      selectedIds,
+      thresholdPoints
+    );
     if (newEvents.length > 0) {
       setQueue((q) => [...q, ...newEvents].sort((a, b) => b.delta - a.delta).slice(0, MAX_QUEUE));
     }
     prevMatchupsRef.current = new Map(matchups.map((m) => [m.id, m]));
-    // Only re-run when a new poll actually lands, not on every selection change.
+    // Only re-run when a new poll actually lands, not on every selection/threshold change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchups]);
 
@@ -37,18 +51,18 @@ export function useScoringEvents(matchups, selectedIds) {
   // Advance event -> summary -> grid on a timer.
   useEffect(() => {
     if (phase === 'event') {
-      const t = setTimeout(() => setPhase('summary'), EVENT_DURATION_MS);
+      const t = setTimeout(() => setPhase('summary'), eventDurationMs);
       return () => clearTimeout(t);
     }
     if (phase === 'summary') {
       const t = setTimeout(() => {
         setPhase('grid');
         setCurrent(null);
-      }, SUMMARY_DURATION_MS);
+      }, summaryDurationMs);
       return () => clearTimeout(t);
     }
     return undefined;
-  }, [phase]);
+  }, [phase, eventDurationMs, summaryDurationMs]);
 
   const injectEvent = useCallback((event) => {
     setQueue((q) => [...q, event]);

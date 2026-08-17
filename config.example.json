@@ -1,6 +1,9 @@
 {
   "port": 4000,
   "refreshIntervalSeconds": 30,
+  "eventThresholdPoints": 4,
+  "eventDurationSeconds": 10,
+  "summaryDurationSeconds": 6,
   "espn": {
     "s2": "YOUR_ESPN_S2_COOKIE_VALUE",
     "swid": "{YOUR-SWID-COOKIE-VALUE}"

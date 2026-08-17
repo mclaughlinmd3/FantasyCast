@@ -90,5 +90,15 @@ export function usePolling() {
     };
   }, [fetchAll]);
 
-  return { matchups, week, lastUpdated, error, loading, leagues: config?.leagues || [] };
+  return {
+    matchups,
+    week,
+    lastUpdated,
+    error,
+    loading,
+    leagues: config?.leagues || [],
+    eventThresholdPoints: config?.eventThresholdPoints,
+    eventDurationSeconds: config?.eventDurationSeconds,
+    summaryDurationSeconds: config?.summaryDurationSeconds,
+  };
 }

@@ -490,7 +490,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.5rem 0.25rem;
+  padding: 0.6rem 0.25rem;
   font-size: 0.9rem;
   cursor: pointer;
   border-radius: 6px;
@@ -501,12 +501,71 @@
 }
 
 .settings-row.disabled {
-  color: var(--muted);
   cursor: not-allowed;
+}
+
+.settings-row.disabled .settings-matchup {
+  opacity: 0.45;
 }
 
 .settings-row input {
   width: 1rem;
   height: 1rem;
+  flex-shrink: 0;
   accent-color: var(--accent);
+}
+
+.settings-matchup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-team {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-team.team-b {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.settings-team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-team.team-a .settings-team-name {
+  order: 1;
+}
+
+.settings-team.team-a .settings-team-score {
+  order: 2;
+}
+
+.settings-team-score {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.settings-team.team-a .settings-team-score {
+  color: var(--accent);
+}
+
+.settings-team.team-b .settings-team-score {
+  color: var(--team-b);
+}
+
+.settings-sep {
+  color: var(--muted);
+  font-size: 0.75rem;
+  flex-shrink: 0;
 }

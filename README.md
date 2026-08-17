@@ -128,8 +128,8 @@ model (see `src/winProbability.js`).
 ## Event takeover
 
 Every poll, the app diffs each displayed matchup's starters against the
-previous poll. Any starter whose live points jumped by 4+ (`SIGNIFICANT_DELTA`
-in `src/eventDetection.js`) queues an event. When the grid is idle, the
+previous poll. Any starter whose live points jumped by the threshold
+(default 4, see below) queues an event. When the grid is idle, the
 highest-point-swing event in the queue takes over the screen:
 
 1. **~10s player takeover** - play-type headline (e.g. "RECEIVING
@@ -143,7 +143,22 @@ highest-point-swing event in the queue takes over the screen:
 If more events land while one is playing, they queue and play in order
 (biggest swing first) instead of being dropped. The settings gear is
 always on screen (even mid-takeover) so the 4 displayed matchups can be
-changed at any time, not just while looking at the grid.
+changed at any time, not just while looking at the grid - and the settings
+list shows each matchup's live score so it's easy to see what's actually
+close before picking.
+
+**Tuning the feel**: three optional `config.json` fields control this,
+all with sane defaults if omitted:
+
+```json
+"eventThresholdPoints": 4,
+"eventDurationSeconds": 10,
+"summaryDurationSeconds": 6
+```
+
+Lower the threshold to catch smaller plays (e.g. a long completion without
+a TD), or raise it to only interrupt for the biggest swings. Adjust the
+durations to taste.
 
 **Preview button**: since real scoring events require a live game, click
 "Preview event" in the header any time to fire a synthetic one - it uses a

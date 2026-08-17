@@ -28,6 +28,9 @@ function buildQueryString(query) {
 app.get('/api/config', (req, res) => {
   res.json({
     refreshIntervalSeconds: config.refreshIntervalSeconds || 30,
+    eventThresholdPoints: config.eventThresholdPoints ?? 4,
+    eventDurationSeconds: config.eventDurationSeconds ?? 10,
+    summaryDurationSeconds: config.summaryDurationSeconds ?? 6,
     leagues: config.leagues.map((l) => ({
       id: `${l.platform}-${l.leagueId}`,
       platform: l.platform,

@@ -4,9 +4,10 @@
 // snapshot are diffed, so swapping in a newly-selected matchup never
 // produces a false "huge jump from zero" event on its first poll.
 
-export const SIGNIFICANT_DELTA = 4; // fantasy points - roughly one TD or bigger
-export const EVENT_DURATION_MS = 10000;
-export const SUMMARY_DURATION_MS = 6000;
+// Defaults, used when config.json doesn't override them (see /api/config).
+export const DEFAULT_SIGNIFICANT_DELTA = 4; // fantasy points - roughly one TD or bigger
+export const DEFAULT_EVENT_DURATION_MS = 10000;
+export const DEFAULT_SUMMARY_DURATION_MS = 6000;
 
 function round(n) {
   return Math.round(n * 100) / 100;
@@ -59,7 +60,12 @@ function describePlayType(prevStats, currentStats, weights) {
   return bestKey ? SLEEPER_STAT_LABELS[bestKey] || null : null;
 }
 
-export function detectScoringEvents(prevMatchupsById, currentMatchups, selectedIds) {
+export function detectScoringEvents(
+  prevMatchupsById,
+  currentMatchups,
+  selectedIds,
+  thresholdPoints = DEFAULT_SIGNIFICANT_DELTA
+) {
   const events = [];
 
   for (const matchup of currentMatchups) {
@@ -77,7 +83,7 @@ export function detectScoringEvents(prevMatchupsById, currentMatchups, selectedI
         if (!prevPlayer) continue;
 
         const delta = round(player.live - prevPlayer.live);
-        if (delta >= SIGNIFICANT_DELTA) {
+        if (delta >= thresholdPoints) {
           events.push({
             id: `${player.id}-${Date.now()}`,
             playerId: player.id,
