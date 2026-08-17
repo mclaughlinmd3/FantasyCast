@@ -1,0 +1,284 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 1.2vh 1.5vw;
+  gap: 1vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: clamp(0.75rem, 1.1vw, 1rem);
+  padding: 0 0.25rem;
+}
+
+.app-title {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.app-updated {
+  margin-left: auto;
+}
+
+.settings-btn {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--muted);
+  border-radius: 8px;
+  width: 2.2rem;
+  height: 2.2rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.settings-btn:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.app-error {
+  background: #2a1414;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.app-loading {
+  color: var(--muted);
+  padding: 1rem;
+}
+
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1.2vh 1.2vw;
+  min-height: 0;
+}
+
+.empty-tile {
+  background: var(--panel);
+  border: 1px dashed var(--panel-border);
+  border-radius: 16px;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.4vw, 1.3rem);
+  cursor: pointer;
+}
+
+.empty-tile:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.matchup-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 1.1vh 1.4vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+  min-width: 0;
+}
+
+.matchup-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.league-name {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: clamp(0.65rem, 0.9vw, 0.85rem);
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.1rem 0.4rem;
+}
+
+.remove-btn:hover {
+  color: var(--danger);
+}
+
+.teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.team {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.team-name {
+  font-weight: 600;
+  font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-manager {
+  color: var(--muted);
+  font-size: clamp(0.65rem, 0.85vw, 0.8rem);
+  margin-top: 0.15rem;
+}
+
+.team-score {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.8rem, 3.4vw, 3.2rem);
+  margin-top: 0.3vh;
+}
+
+.team-a .team-score {
+  color: var(--accent);
+}
+
+.team-b .team-score {
+  color: var(--team-b);
+}
+
+.vs {
+  color: var(--muted);
+  font-size: clamp(0.7rem, 0.9vw, 0.9rem);
+  flex-shrink: 0;
+}
+
+.win-prob {
+  margin-top: 0.6vh;
+}
+
+.win-prob-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: clamp(0.65rem, 0.85vw, 0.8rem);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  margin-bottom: 0.25vh;
+}
+
+.win-prob-bar {
+  display: flex;
+  height: 0.55rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--panel-border);
+}
+
+.win-prob-fill-a {
+  background: var(--accent);
+}
+
+.win-prob-fill-b {
+  background: var(--team-b);
+}
+
+/* Settings panel */
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 10;
+}
+
+.settings-panel {
+  width: min(420px, 90vw);
+  height: 100%;
+  background: var(--panel);
+  border-left: 1px solid var(--panel-border);
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.settings-header h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: var(--text);
+}
+
+.settings-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.settings-league {
+  margin-bottom: 1.25rem;
+}
+
+.settings-league h3 {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  margin: 0 0 0.5rem;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.settings-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.settings-row.disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.settings-row input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent);
+}

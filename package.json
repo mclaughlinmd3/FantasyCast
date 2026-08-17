@@ -1,17 +1,27 @@
 {
   "name": "fantasycast",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "Live fantasy football scoreboard for a second screen, pulling from Sleeper and ESPN leagues.",
-  "main": "server/index.js",
+  "type": "module",
   "scripts": {
-    "start": "node server/index.js"
+    "dev:proxy": "node server/index.js",
+    "dev:vite": "vite",
+    "dev": "concurrently -k -n proxy,vite -c blue,green \"npm:dev:proxy\" \"npm:dev:vite\"",
+    "build": "vite build",
+    "start": "npm run build && node server/index.js"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
     "express": "^4.19.2",
-    "socket.io": "^4.7.5"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^8.2.2",
+    "vite": "^5.4.0"
   }
 }

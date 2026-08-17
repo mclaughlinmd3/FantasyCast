@@ -1,13 +1,19 @@
 # FantasyCast
 
-A live fantasy football scoreboard for a second screen. Pulls matchup scores from
-Sleeper and private ESPN leagues, and lets you pick which matchup to display -
-or auto-rotate through all of them.
+A live fantasy football scoreboard for a second screen. Shows up to 4
+matchups at once - team names, live scores, and a win-probability bar
+computed from current score plus each team's remaining projected points -
+pulled from Sleeper and private ESPN leagues.
 
-- **TV view** (`/tv.html`) - fullscreen scoreboard showing one matchup at a time.
-- **Control view** (`/control.html`) - list of every matchup across all your
-  leagues; click one to send it to the TV view. Toggle auto-rotate to cycle
-  through every matchup automatically.
+## How it's built
+
+- **`src/`** - a single-page React app (built with Vite) that does all the
+  polling, normalization, and win-probability math client-side. No app
+  state lives on the server.
+- **`server/`** - a deliberately thin Express server. It exists only to (a)
+  keep your ESPN login cookies out of the browser, and (b) avoid any CORS
+  issues, by proxying `/api/sleeper/*` and `/api/espn/:leagueId` to the
+  real APIs. It serves the built app in production too.
 
 ## 1. Install
 
@@ -18,8 +24,6 @@ npm install
 ```
 
 ## 2. Configure your leagues
-
-Copy the example config and fill in your leagues:
 
 ```bash
 cp config.example.json config.json
@@ -55,55 +59,76 @@ Private ESPN leagues need two cookie values from your browser session:
 }
 ```
 
-5. Add each ESPN league, with the season year and the numeric league ID from
+5. Add each ESPN league, with the season year and numeric league ID from
    the league's URL:
 
 ```json
 { "platform": "espn", "leagueId": "123456", "season": 2026, "name": "Office League" }
 ```
 
-These cookies are tied to your ESPN login - treat `config.json` like a
-password file. It's already in `.gitignore`, so `git status` should never
-show it as a tracked or staged file.
+Treat `config.json` like a password file - it's already in `.gitignore`.
+These cookies are long-lived but not permanent; if ESPN matchups stop
+loading later in the season, refresh the values.
 
 ## 3. Run it
+
+**Development** (hot reload, runs the Vite dev server + API proxy together):
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:5173`.
+
+**Production-ish** (single command, builds then serves everything from one
+port - closer to what you'd actually leave running on the display laptop):
 
 ```bash
 npm start
 ```
 
-The server prints the local URLs, e.g.:
+Open `http://localhost:4000`.
 
-```
-FantasyCast running on port 3000
-  TV view:      http://localhost:3000/tv.html
-  Control view: http://localhost:3000/control.html
-```
+## 4. Set up the display
 
-## 4. Set up the two screens
+1. Plug in the extra monitor and extend your desktop (not mirror) in your
+   OS display settings.
+2. Open the app in a browser window, drag it onto the extra monitor, and
+   press F11 (or your browser's fullscreen shortcut).
+3. Click the gear icon to choose which 4 matchups (across all your leagues)
+   show in the grid. Your picks are saved in the browser (`localStorage`),
+   so they persist across reloads. Each card also has an `x` to quickly
+   pull it out of the grid.
 
-Since everything runs on one laptop with an external monitor:
+## How win probability is calculated
 
-1. Plug in the monitor and extend your desktop (not mirror) in your OS display settings.
-2. Open a browser window to `http://localhost:3000/tv.html`, drag it onto the
-   extra monitor, and press F11 (or your browser's fullscreen shortcut) to
-   go fullscreen.
-3. Open a second browser window on your laptop's own screen to
-   `http://localhost:3000/control.html` and use it to pick matchups.
-4. On the TV view itself, left/right arrow keys also switch matchups if you'd
-   rather not touch the control page.
+For each team: `estimated final = current score + sum of (projected - live)
+for each starter who hasn't yet matched their projection`. That gap between
+the two teams' estimated finals is run through a logistic curve whose
+steepness relaxes as fewer starters are still "in doubt" - a big early lead
+reads as close, a small lead with nobody left to play reads as
+near-certain. It's a glanceable estimate for a TV screen, not a rigorous
+model (see `src/winProbability.js`).
 
-Because the server binds to your whole network, you can also open the
-control page from your phone at `http://<your-laptop's-lan-ip>:3000/control.html`
-if you want to switch games without touching the laptop.
+## Known rough edges
 
-## Notes
+- **ESPN player-level data is reverse-engineered.** ESPN has no public API
+  docs. Team names, records, and total scores are solid, but if
+  projected/live *player* points don't populate for an ESPN matchup, the
+  win-probability bar just falls back to being score-only for that
+  matchup - the rest of the app still works. Flag it if you hit this and
+  the parsing in `src/api/espn.js` can be adjusted.
+- **Sleeper projections come from an undocumented endpoint.** If it ever
+  changes shape, projections silently stop populating rather than crashing
+  the app (same score-only fallback as above).
+- A league that fails to fetch on a given poll (bad ID, expired ESPN
+  cookie, transient network blip) is skipped for that cycle and logged to
+  the browser console - it doesn't take down the other leagues.
 
-- Scores refresh from Sleeper/ESPN every `refreshIntervalSeconds` (default 20s).
-- The current NFL week is detected automatically via Sleeper's public
-  `state/nfl` endpoint, even for leagues that are ESPN-only.
-- If a league fails to load (bad ID, expired ESPN cookies, etc.) it's skipped
-  and logged to the server console rather than crashing the whole app - check
-  the terminal running `npm start` if a league's matchups don't show up.
-- ESPN's `espn_s2` cookie is long-lived but not permanent; if ESPN matchups
-  stop loading later in the season, refresh the cookie value in `config.json`.
+## What's next
+
+This is phase 1 (the grid + win-probability bars). Event detection (diffing
+player stats between polls to catch big scoring plays) and the takeover
+screen are intentionally not built yet - the data model already carries
+per-player live/projected points so that phase can slot in without
+reshaping this one.

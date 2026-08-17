@@ -1,6 +1,8 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const configPath = path.join(__dirname, '..', 'config.json');
 
 if (!fs.existsSync(configPath)) {
@@ -25,4 +27,4 @@ if (hasEspnLeague && (!config.espn || !config.espn.s2 || !config.espn.swid)) {
   process.exit(1);
 }
 
-module.exports = config;
+export default config;

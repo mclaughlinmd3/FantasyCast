@@ -1,0 +1,129 @@
+// Normalizes Sleeper data into the shared matchup/player shape used by the
+// rest of the app (see src/api/model.js for the shape).
+
+import { getPlayerMap } from './sleeperPlayers.js';
+
+async function fetchJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Sleeper request failed (${url}): ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getCurrentWeek() {
+  const state = await fetchJson('/api/sleeper/state/nfl');
+  return state.week || 1;
+}
+
+// Projections come from an undocumented endpoint, so failures here are
+// swallowed - a missing projection just means that player contributes no
+// "remaining upside" to the win-probability estimate instead of crashing.
+async function getProjectionsByPlayerId(season, week, scoringKey) {
+  try {
+    const positions = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
+    const qs = positions.map((p) => `position[]=${p}`).join('&');
+    const projections = await fetchJson(
+      `/api/sleeper-projections/nfl/${season}/${week}?season_type=regular&${qs}&order_by=ppr`
+    );
+    const map = new Map();
+    for (const entry of projections) {
+      const pts =
+        entry?.stats?.[scoringKey] ?? entry?.stats?.pts_ppr ?? entry?.stats?.pts_std ?? null;
+      if (entry.player_id != null && pts != null) {
+        map.set(String(entry.player_id), pts);
+      }
+    }
+    return map;
+  } catch (err) {
+    console.error('Sleeper projections fetch failed, continuing without them:', err.message);
+    return new Map();
+  }
+}
+
+function scoringKeyFor(league) {
+  const rec = league?.scoring_settings?.rec ?? 0;
+  if (rec >= 1) return 'pts_ppr';
+  if (rec > 0) return 'pts_half_ppr';
+  return 'pts_std';
+}
+
+export async function getLeagueMatchups(leagueConfig, week) {
+  const { leagueId, season, name } = leagueConfig;
+  const [league, users, rosters, matchups, playerMap] = await Promise.all([
+    fetchJson(`/api/sleeper/league/${leagueId}`),
+    fetchJson(`/api/sleeper/league/${leagueId}/users`),
+    fetchJson(`/api/sleeper/league/${leagueId}/rosters`),
+    fetchJson(`/api/sleeper/league/${leagueId}/matchups/${week}`),
+    getPlayerMap(),
+  ]);
+
+  const scoringKey = scoringKeyFor(league);
+  const projections = await getProjectionsByPlayerId(
+    season || new Date().getFullYear(),
+    week,
+    scoringKey
+  );
+
+  const userById = new Map(users.map((u) => [u.user_id, u]));
+  const rosterById = new Map(rosters.map((r) => [r.roster_id, r]));
+
+  const grouped = new Map();
+  for (const entry of matchups) {
+    if (entry.matchup_id == null) continue;
+    if (!grouped.has(entry.matchup_id)) grouped.set(entry.matchup_id, []);
+    grouped.get(entry.matchup_id).push(entry);
+  }
+
+  const result = [];
+  for (const [matchupId, entries] of grouped) {
+    if (entries.length < 2) continue;
+    const [a, b] = entries;
+    result.push({
+      id: `sleeper-${leagueId}-${matchupId}`,
+      platform: 'sleeper',
+      leagueId,
+      leagueName: name || league.name,
+      week,
+      teamA: buildTeam(a, rosterById, userById, projections, playerMap),
+      teamB: buildTeam(b, rosterById, userById, projections, playerMap),
+    });
+  }
+  return result;
+}
+
+function buildTeam(entry, rosterById, userById, projections, playerMap) {
+  const roster = rosterById.get(entry.roster_id);
+  const user = roster ? userById.get(roster.owner_id) : null;
+  const teamName = user?.metadata?.team_name || user?.display_name || `Roster ${entry.roster_id}`;
+  const wins = roster?.settings?.wins ?? 0;
+  const losses = roster?.settings?.losses ?? 0;
+  const playersPoints = entry.players_points || {};
+
+  const starters = (entry.starters || [])
+    .filter((playerId) => playerId && playerId !== '0')
+    .map((playerId) => {
+      const info = playerMap.get(playerId);
+      return {
+        id: playerId,
+        name: info?.name || playerId,
+        position: info?.position || null,
+        photo: `https://sleepercdn.com/content/nfl/players/thumb/${playerId}.jpg`,
+        live: round(playersPoints[playerId] || 0),
+        projected: round(projections.get(playerId) ?? playersPoints[playerId] ?? 0),
+      };
+    });
+
+  return {
+    name: teamName,
+    manager: user?.display_name || null,
+    score: round(entry.points || 0),
+    avatar: user?.avatar ? `https://sleepercdn.com/avatars/${user.avatar}` : null,
+    record: `${wins}-${losses}`,
+    starters,
+  };
+}
+
+function round(n) {
+  return Math.round(n * 100) / 100;
+}

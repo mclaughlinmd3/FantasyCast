@@ -1,90 +1,114 @@
-const path = require('path');
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const config = require('./config');
-const { fetchAllMatchups } = require('./aggregate');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import express from 'express';
+import config from './config.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
 
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// This server is intentionally "dumb": it holds no app state and does no
+// aggregation. It exists only so the browser (a) never sees the ESPN
+// cookies, and (b) never has to worry about CORS. All matchup/win-probability
+// logic lives client-side in the React app.
 
-const state = {
-  week: null,
-  matchups: [],
-  selectedId: null,
-  autoRotate: false,
-  updatedAt: null,
-};
-
-let rotateTimer = null;
-
-function broadcastState() {
-  io.emit('state', state);
-}
-
-async function refresh() {
-  try {
-    const { week, matchups } = await fetchAllMatchups(config, state.week);
-    state.week = week;
-    state.matchups = matchups;
-    state.updatedAt = new Date().toISOString();
-
-    const stillExists = state.selectedId && matchups.some((m) => m.id === state.selectedId);
-    if (!stillExists) {
-      state.selectedId = matchups[0]?.id || null;
+function buildQueryString(query) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (Array.isArray(value)) {
+      value.forEach((v) => params.append(key, v));
+    } else {
+      params.append(key, value);
     }
-
-    broadcastState();
-  } catch (err) {
-    console.error('Refresh failed:', err);
   }
+  return params.toString();
 }
 
-function stopRotate() {
-  if (rotateTimer) clearInterval(rotateTimer);
-  rotateTimer = null;
-}
-
-function startRotate() {
-  stopRotate();
-  const intervalMs = (config.rotateIntervalSeconds || 15) * 1000;
-  rotateTimer = setInterval(() => {
-    if (!state.matchups.length) return;
-    const idx = state.matchups.findIndex((m) => m.id === state.selectedId);
-    const next = state.matchups[(idx + 1) % state.matchups.length];
-    state.selectedId = next.id;
-    broadcastState();
-  }, intervalMs);
-}
-
-io.on('connection', (socket) => {
-  socket.emit('state', state);
-
-  socket.on('select', (matchupId) => {
-    if (!state.matchups.some((m) => m.id === matchupId)) return;
-    state.selectedId = matchupId;
-    state.autoRotate = false;
-    stopRotate();
-    broadcastState();
-  });
-
-  socket.on('toggle-rotate', () => {
-    state.autoRotate = !state.autoRotate;
-    if (state.autoRotate) startRotate();
-    else stopRotate();
-    broadcastState();
+// Non-secret league list the client needs to know what to poll.
+app.get('/api/config', (req, res) => {
+  res.json({
+    refreshIntervalSeconds: config.refreshIntervalSeconds || 30,
+    leagues: config.leagues.map((l) => ({
+      id: `${l.platform}-${l.leagueId}`,
+      platform: l.platform,
+      leagueId: l.leagueId,
+      season: l.season,
+      name: l.name || `${l.platform} League ${l.leagueId}`,
+    })),
   });
 });
 
-refresh();
-setInterval(refresh, (config.refreshIntervalSeconds || 20) * 1000);
+// Sleeper is a public API, but proxying keeps things CORS-safe and uniform.
+app.get('/api/sleeper/*', async (req, res) => {
+  const rest = req.params[0];
+  const qs = buildQueryString(req.query);
+  const url = `https://api.sleeper.app/v1/${rest}${qs ? `?${qs}` : ''}`;
 
-const port = config.port || 3000;
-server.listen(port, '0.0.0.0', () => {
-  console.log(`FantasyCast running on port ${port}`);
-  console.log(`  TV view:      http://localhost:${port}/tv.html`);
-  console.log(`  Control view: http://localhost:${port}/control.html`);
+  try {
+    const upstream = await fetch(url);
+    const body = await upstream.text();
+    res.status(upstream.status).type('application/json').send(body);
+  } catch (err) {
+    res.status(502).json({ error: `Sleeper upstream request failed: ${err.message}` });
+  }
+});
+
+// Sleeper's weekly projections live under a different (undocumented) path
+// prefix than the rest of the v1 API.
+app.get('/api/sleeper-projections/*', async (req, res) => {
+  const rest = req.params[0];
+  const qs = buildQueryString(req.query);
+  const url = `https://api.sleeper.app/projections/${rest}${qs ? `?${qs}` : ''}`;
+
+  try {
+    const upstream = await fetch(url);
+    const body = await upstream.text();
+    res.status(upstream.status).type('application/json').send(body);
+  } catch (err) {
+    res.status(502).json({ error: `Sleeper projections request failed: ${err.message}` });
+  }
+});
+
+// ESPN requires the espn_s2/SWID auth cookies, which must never reach the
+// browser, so this route injects them server-side.
+app.get('/api/espn/:leagueId', async (req, res) => {
+  const { leagueId } = req.params;
+  const { season, ...rest } = req.query;
+
+  if (!season) {
+    return res.status(400).json({ error: 'season query param is required' });
+  }
+  if (!config.espn || !config.espn.s2 || !config.espn.swid) {
+    return res.status(500).json({ error: 'ESPN cookies are not configured in config.json' });
+  }
+
+  const qs = buildQueryString(rest);
+  const url =
+    `https://fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}` +
+    (qs ? `?${qs}` : '');
+
+  try {
+    const upstream = await fetch(url, {
+      headers: {
+        Cookie: `espn_s2=${config.espn.s2}; SWID=${config.espn.swid}`,
+      },
+    });
+    const body = await upstream.text();
+    res.status(upstream.status).type('application/json').send(body);
+  } catch (err) {
+    res.status(502).json({ error: `ESPN upstream request failed: ${err.message}` });
+  }
+});
+
+const distPath = path.join(__dirname, '..', 'dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+}
+
+const port = config.port || 4000;
+app.listen(port, '0.0.0.0', () => {
+  console.log(`FantasyCast proxy/server running on port ${port}`);
+  if (!fs.existsSync(distPath)) {
+    console.log('  No dist/ build found yet - run `npm run dev` for local development.');
+  }
 });
