@@ -4,7 +4,7 @@ import { getMatchupRoles } from '../teamRoles.js';
 import { formatStatLine } from '../playerStats.js';
 import { initials } from '../initials.js';
 
-const MAX_ACTIVE_SHOWN = 3;
+const MAX_ACTIVE_SHOWN = 5;
 
 function Team({ team, role }) {
   return (
