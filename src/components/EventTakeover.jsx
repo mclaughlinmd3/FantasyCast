@@ -1,13 +1,6 @@
 import { useState } from 'react';
 import { getMatchupRoles } from '../teamRoles.js';
-
-function initials(name) {
-  return name
-    .split(' ')
-    .map((w) => w[0])
-    .join('')
-    .slice(0, 2);
-}
+import { initials } from '../initials.js';
 
 export default function EventTakeover({ event, goodGuyIds }) {
   const [photoFailed, setPhotoFailed] = useState(false);

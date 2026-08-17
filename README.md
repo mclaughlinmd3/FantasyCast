@@ -133,6 +133,13 @@ and matched to each player by their NFL team. Before any games kick off,
 or for players not currently in a live game, the card shows "No active
 players" for that team rather than guessing.
 
+Each active player shows a photo (falls back to initials if it fails to
+load), name, live points, and - for Sleeper players only - a short
+position-aware stat line (e.g. "8 REC · 112 YD · 1 TD" for a receiver,
+"267 YD · 2 TD · 1 INT" for a QB). ESPN doesn't get a stat line for the
+same reason it doesn't get play-type headlines (see below); it still
+shows photo/name/points.
+
 ## Known rough edges
 
 - **ESPN player-level data is reverse-engineered.** ESPN has no public API

@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { calculateWinProbability } from '../winProbability.js';
 import { getMatchupRoles } from '../teamRoles.js';
+import { formatStatLine } from '../playerStats.js';
+import { initials } from '../initials.js';
 
-const MAX_ACTIVE_SHOWN = 4;
+const MAX_ACTIVE_SHOWN = 3;
 
 function Team({ team, role }) {
   return (
@@ -28,6 +31,34 @@ function WinProbabilityBar({ probA, probB, roleA, roleB }) {
   );
 }
 
+function ActivePlayerRow({ player }) {
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const showPhoto = player.photo && !photoFailed;
+  const statLine = formatStatLine(player);
+
+  return (
+    <li>
+      {showPhoto ? (
+        <img
+          className="active-player-photo"
+          src={player.photo}
+          alt=""
+          onError={() => setPhotoFailed(true)}
+        />
+      ) : (
+        <div className="active-player-photo active-player-photo-fallback">
+          {initials(player.name)}
+        </div>
+      )}
+      <div className="active-player-info">
+        <div className="active-player-name">{player.name}</div>
+        {statLine && <div className="active-player-stat-line">{statLine}</div>}
+      </div>
+      <span className="active-player-pts">{player.live.toFixed(1)}</span>
+    </li>
+  );
+}
+
 function ActivePlayers({ team, role }) {
   const active = team.starters
     .filter((p) => p.isActive)
@@ -41,10 +72,7 @@ function ActivePlayers({ team, role }) {
       ) : (
         <ul className="active-players-list">
           {active.map((p) => (
-            <li key={p.id}>
-              <span className="active-player-name">{p.name}</span>
-              <span className="active-player-pts">{p.live.toFixed(1)}</span>
-            </li>
+            <ActivePlayerRow key={p.id} player={p} />
           ))}
         </ul>
       )}
