@@ -122,14 +122,20 @@ app.get('/api/espn/:leagueId', async (req, res) => {
   }
 
   const qs = buildQueryString(rest);
+  // ESPN split read traffic off to this subdomain at some point; the older
+  // fantasy.espn.com/apis/v3/... host now appears to serve its normal
+  // website (HTML, status 200) for this path instead of the API response.
   const url =
-    `https://fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}` +
+    `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}` +
     (qs ? `?${qs}` : '');
 
   try {
     const upstream = await fetch(url, {
       headers: {
         Cookie: `espn_s2=${config.espn.s2}; SWID=${config.espn.swid}`,
+        Accept: 'application/json',
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
     });
     await forwardJson(
