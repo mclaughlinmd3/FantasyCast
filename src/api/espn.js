@@ -61,7 +61,7 @@ function buildTeam(side, leagueId, teamsById, week) {
 
   return {
     id: `espn-${leagueId}-${side.teamId}`,
-    name: team ? `${team.location} ${team.nickname}`.trim() : `Team ${side.teamId}`,
+    name: teamDisplayName(team, side.teamId),
     manager: null,
     score: round(side.totalPoints || 0),
     avatar: team?.logo || null,
@@ -121,4 +121,17 @@ function proTeamAbbrev(proTeamId) {
 
 function round(n) {
   return Math.round(n * 100) / 100;
+}
+
+// ESPN has used a couple different shapes for team naming over time (a
+// single `name` field vs. split `location`/`nickname` fields), and
+// pre-draft teams may not have either set yet. Try each in order rather
+// than assuming one and printing a literal "undefined" when it's missing.
+function teamDisplayName(team, teamId) {
+  if (!team) return `Team ${teamId}`;
+  if (team.name) return team.name;
+  const combined = `${team.location || ''} ${team.nickname || ''}`.trim();
+  if (combined) return combined;
+  if (team.abbrev) return team.abbrev;
+  return `Team ${teamId}`;
 }
