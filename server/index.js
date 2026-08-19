@@ -24,6 +24,30 @@ function buildQueryString(query) {
   return params.toString();
 }
 
+// Forwards an upstream response as JSON - but actually checks it's JSON
+// first. Blindly relabeling everything as application/json (the previous
+// behavior) meant an upstream auth failure or error page (often HTML) got
+// forwarded as if it were valid data, and the client's JSON.parse failure
+// ("Unexpected token '<'") gave no clue what actually went wrong.
+async function forwardJson(upstream, res, label, hint) {
+  const contentType = upstream.headers.get('content-type') || '';
+  const body = await upstream.text();
+
+  if (!contentType.includes('application/json')) {
+    console.error(
+      `${label} returned non-JSON (status ${upstream.status}, content-type "${contentType}"): ${body.slice(0, 300)}`
+    );
+    res.status(502).json({
+      error:
+        `${label} returned an unexpected non-JSON response (status ${upstream.status}).` +
+        (hint ? ` ${hint}` : ''),
+    });
+    return;
+  }
+
+  res.status(upstream.status).type('application/json').send(body);
+}
+
 // Non-secret league list the client needs to know what to poll.
 app.get('/api/config', (req, res) => {
   res.json({
@@ -49,8 +73,7 @@ app.get('/api/sleeper/*', async (req, res) => {
 
   try {
     const upstream = await fetch(url);
-    const body = await upstream.text();
-    res.status(upstream.status).type('application/json').send(body);
+    await forwardJson(upstream, res, 'Sleeper');
   } catch (err) {
     res.status(502).json({ error: `Sleeper upstream request failed: ${err.message}` });
   }
@@ -65,8 +88,7 @@ app.get('/api/sleeper-projections/*', async (req, res) => {
 
   try {
     const upstream = await fetch(url);
-    const body = await upstream.text();
-    res.status(upstream.status).type('application/json').send(body);
+    await forwardJson(upstream, res, 'Sleeper projections');
   } catch (err) {
     res.status(502).json({ error: `Sleeper projections request failed: ${err.message}` });
   }
@@ -80,8 +102,7 @@ app.get('/api/sleeper-stats/*', async (req, res) => {
 
   try {
     const upstream = await fetch(url);
-    const body = await upstream.text();
-    res.status(upstream.status).type('application/json').send(body);
+    await forwardJson(upstream, res, 'Sleeper stats');
   } catch (err) {
     res.status(502).json({ error: `Sleeper stats request failed: ${err.message}` });
   }
@@ -111,8 +132,12 @@ app.get('/api/espn/:leagueId', async (req, res) => {
         Cookie: `espn_s2=${config.espn.s2}; SWID=${config.espn.swid}`,
       },
     });
-    const body = await upstream.text();
-    res.status(upstream.status).type('application/json').send(body);
+    await forwardJson(
+      upstream,
+      res,
+      'ESPN',
+      'This usually means the espn_s2/SWID cookies are wrong/expired, or the leagueId/season is wrong - double check config.json.'
+    );
   } catch (err) {
     res.status(502).json({ error: `ESPN upstream request failed: ${err.message}` });
   }
@@ -126,8 +151,7 @@ app.get('/api/nfl-scoreboard', async (req, res) => {
     const upstream = await fetch(
       'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'
     );
-    const body = await upstream.text();
-    res.status(upstream.status).type('application/json').send(body);
+    await forwardJson(upstream, res, 'NFL scoreboard');
   } catch (err) {
     res.status(502).json({ error: `NFL scoreboard request failed: ${err.message}` });
   }
