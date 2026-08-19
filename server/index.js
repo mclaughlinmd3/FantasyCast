@@ -60,7 +60,11 @@ app.get('/api/config', (req, res) => {
       platform: l.platform,
       leagueId: l.leagueId,
       season: l.season,
-      name: l.name || `${l.platform} League ${l.leagueId}`,
+      // Leave unset if config.json doesn't name it - the client falls back
+      // to the league's real name fetched from Sleeper/ESPN, and only to a
+      // generic placeholder if even that comes back empty. Resolving the
+      // placeholder here would always win over the real name client-side.
+      name: l.name || null,
     })),
   });
 });

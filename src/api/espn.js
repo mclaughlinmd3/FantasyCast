@@ -27,6 +27,7 @@ export async function getLeagueMatchups(leagueConfig, week) {
   const data = await fetchJson(leagueId, season, week);
 
   const teamsById = new Map((data.teams || []).map((t) => [t.id, t]));
+  const memberById = new Map((data.members || []).map((m) => [m.id, m]));
   const leagueName = name || data.settings?.name || `ESPN League ${leagueId}`;
 
   const result = [];
@@ -40,14 +41,14 @@ export async function getLeagueMatchups(leagueConfig, week) {
       leagueId,
       leagueName,
       week,
-      teamA: buildTeam(matchup.home, leagueId, teamsById, week),
-      teamB: buildTeam(matchup.away, leagueId, teamsById, week),
+      teamA: buildTeam(matchup.home, leagueId, teamsById, memberById, week),
+      teamB: buildTeam(matchup.away, leagueId, teamsById, memberById, week),
     });
   }
   return result;
 }
 
-function buildTeam(side, leagueId, teamsById, week) {
+function buildTeam(side, leagueId, teamsById, memberById, week) {
   const team = teamsById.get(side.teamId);
   const wins = team?.record?.overall?.wins ?? 0;
   const losses = team?.record?.overall?.losses ?? 0;
@@ -62,12 +63,26 @@ function buildTeam(side, leagueId, teamsById, week) {
   return {
     id: `espn-${leagueId}-${side.teamId}`,
     name: teamDisplayName(team, side.teamId),
-    manager: null,
+    manager: teamManagerName(team, memberById),
     score: round(side.totalPoints || 0),
     avatar: team?.logo || null,
     record: `${wins}-${losses}`,
     starters,
   };
+}
+
+// The `members` array (owner display names) comes bundled with the base
+// league response - teams reference their owner(s) by id via `owners`.
+// Defensive by construction: if that array or field isn't where expected,
+// manager just stays unset like it did before, nothing breaks.
+function teamManagerName(team, memberById) {
+  const ownerId = team?.owners?.[0];
+  if (!ownerId) return null;
+  const member = memberById.get(ownerId);
+  if (!member) return null;
+  if (member.displayName) return member.displayName;
+  const fullName = `${member.firstName || ''} ${member.lastName || ''}`.trim();
+  return fullName || null;
 }
 
 function buildPlayer(entry, week) {

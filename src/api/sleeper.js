@@ -107,7 +107,7 @@ export async function getLeagueMatchups(leagueConfig, week) {
       id: `sleeper-${leagueId}-${matchupId}`,
       platform: 'sleeper',
       leagueId,
-      leagueName: name || league.name,
+      leagueName: name || league.name || `Sleeper League ${leagueId}`,
       week,
       scoringWeights: league.scoring_settings || null,
       teamA: buildTeam(a, leagueId, rosterById, userById, projections, rawStats, playerMap),
