@@ -7,7 +7,7 @@
 // uncertain, so a big early lead reads as close while a small lead with
 // nobody left to play reads as near-certain.
 
-const PER_PLAYER_SIGMA = 6; // rough weekly stddev (fantasy pts) for one starter still in play
+const PER_PLAYER_SIGMA = 11; // rough weekly stddev (fantasy pts) for one starter still in play
 const MIN_PROB = 0.01;
 const MAX_PROB = 0.99;
 

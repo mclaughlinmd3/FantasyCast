@@ -111,6 +111,15 @@ reads as close, a small lead with nobody left to play reads as
 near-certain. It's a glanceable estimate for a TV screen, not a rigorous
 model (see `src/winProbability.js`).
 
+The steepness constant (`PER_PLAYER_SIGMA`, currently 11 "points of
+uncertainty" per still-in-doubt starter) was nudged up from an initial
+guess of 6 after comparing one real matchup against ESPN's own
+in-app probability (ours ran a bit overconfident at 37/63 vs. their
+43/57; 11 lines up closely). It's one calibration point, not a proof this
+matches ESPN/Sleeper's own (undisclosed) models in general - if you
+compare more matchups against either app and ours is consistently off in
+one direction, that's a useful signal to retune this constant further.
+
 ## Good guys / bad guys
 
 Click the settings gear and open "Your teams" to mark which teams are
