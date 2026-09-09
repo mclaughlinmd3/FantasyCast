@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { getMatchupRoles } from '../teamRoles.js';
 import { formatStatLine } from '../playerStats.js';
 import { initials } from '../initials.js';
+import { useFlipList } from '../hooks/useFlipList.js';
 
 const MAX_ACTIVE_SHOWN = 5;
 
@@ -15,13 +16,13 @@ function Team({ team, role }) {
   );
 }
 
-function ActivePlayerRow({ player }) {
+function ActivePlayerRow({ player, listRef }) {
   const [photoFailed, setPhotoFailed] = useState(false);
   const showPhoto = player.photo && !photoFailed;
   const statLine = formatStatLine(player);
 
   return (
-    <li>
+    <li ref={listRef}>
       {showPhoto ? (
         <img
           className="active-player-photo"
@@ -49,6 +50,8 @@ function ActivePlayers({ team, role }) {
     .sort((a, b) => b.live - a.live)
     .slice(0, MAX_ACTIVE_SHOWN);
 
+  const registerNode = useFlipList(active.map((p) => p.id).join(','));
+
   return (
     <div className={`active-players team-${role}`}>
       {active.length === 0 ? (
@@ -56,7 +59,7 @@ function ActivePlayers({ team, role }) {
       ) : (
         <ul className="active-players-list">
           {active.map((p) => (
-            <ActivePlayerRow key={p.id} player={p} />
+            <ActivePlayerRow key={p.id} player={p} listRef={registerNode(p.id)} />
           ))}
         </ul>
       )}

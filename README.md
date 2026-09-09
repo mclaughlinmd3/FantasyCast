@@ -112,6 +112,8 @@ grid, the event takeover, and the matchup summary.
 Each matchup card shows up to 5 currently-active players per team (sorted
 by live points, so the top performers show first if more than 5 are
 playing), filling the space below the score instead of leaving it empty.
+When the ranking changes between polls, players smoothly slide to their
+new position instead of snapping (see `src/hooks/useFlipList.js`).
 "Active" means their real NFL game is currently in
 progress - fantasy point totals alone can't tell a bye week or "hasn't
 played yet" from "playing right now," so this is pulled from ESPN's
