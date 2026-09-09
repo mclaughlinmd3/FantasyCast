@@ -581,12 +581,41 @@
   margin-bottom: 1.25rem;
 }
 
-.settings-league h3 {
+.settings-league-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0;
+  margin: 0 0 0.25rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.settings-league-header h3 {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.75rem;
-  margin: 0 0 0.5rem;
+  margin: 0;
+}
+
+.settings-league-header:hover h3 {
+  color: var(--text);
+}
+
+.settings-chevron {
+  display: inline-block;
+  color: var(--muted);
+  font-size: 0.7rem;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.settings-chevron.collapsed {
+  transform: rotate(-90deg);
 }
 
 .settings-row {
