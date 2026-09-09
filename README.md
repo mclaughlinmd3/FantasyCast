@@ -215,10 +215,17 @@ a TD), or raise it to only interrupt for the biggest swings. Adjust the
 durations to taste.
 
 **Preview button**: since real scoring events require a live game, click
-"Preview event" in the header any time to fire a synthetic one - it uses a
-real starter from one of your currently-selected matchups if data is
-loaded, or built-in demo data if not, so you can see and tune the whole
-flow before the season starts.
+"Preview event" in the header any time to fire a synthetic one. It only
+ever picks from players currently shown in the active-players list on the
+grid (combine with "Simulate active players" to have candidates before any
+real game is live) - falling back to built-in demo data if nothing
+currently displayed has any active players - so the player it picks is
+always one you can actually watch. The point swing itself isn't applied to
+the grid until the takeover/summary screens finish and it's back on
+screen, so the active-players reorder plays out for real right as you're
+looking at it, instead of already having happened out of sight - a good
+way to check the reorder animation (`src/hooks/useFlipList.js`) is working
+without waiting for a real game.
 
 ## Play-type detection (Sleeper only, for now)
 

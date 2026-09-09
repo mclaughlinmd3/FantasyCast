@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePolling } from './hooks/usePolling.js';
 import { useSelectedMatchups } from './hooks/useSelectedMatchups.js';
 import { useScoringEvents } from './hooks/useScoringEvents.js';
 import { useGoodGuys } from './hooks/useGoodGuys.js';
-import { createPreviewEvent } from './demoData.js';
+import { createPreviewEvent, applyPreviewBoost } from './demoData.js';
 import { simulateActivePlayers } from './simulateActivePlayers.js';
 import Grid from './components/Grid.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
@@ -31,15 +31,35 @@ export default function App() {
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [simulateActive, setSimulateActive] = useState(false);
-  const gridMatchups = simulateActive ? simulateActivePlayers(selectedMatchups) : selectedMatchups;
+  const [previewEvent, setPreviewEvent] = useState(null);
+  // Set at the moment "Preview event" is clicked, but only promoted to
+  // previewEvent (and so only applied to the grid) once the phase cycles
+  // back to 'grid' - see the effect below. That's deliberate: applying the
+  // boost immediately would reorder the active-players list while it's
+  // still hidden behind the takeover screen, so the reorder would already
+  // be finished (with nothing to animate) by the time the grid is visible
+  // again, defeating the point of using this to check the slide animation.
+  const pendingPreviewEventRef = useRef(null);
+  const gridMatchupsBase = simulateActive ? simulateActivePlayers(selectedMatchups) : selectedMatchups;
+  const gridMatchups = applyPreviewBoost(gridMatchupsBase, previewEvent);
+
+  useEffect(() => {
+    if (phase === 'grid' && pendingPreviewEventRef.current) {
+      setPreviewEvent(pendingPreviewEventRef.current);
+      pendingPreviewEventRef.current = null;
+    }
+  }, [phase]);
 
   // The event/summary screens capture a snapshot of the matchup at the
   // moment the event fired (needed so the triggering player's before/after
-  // stats stay consistent) - but scores keep changing while that screen is
-  // up, so look up the current live matchup by id to display instead of the
-  // stale snapshot. Falls back to the snapshot for synthetic preview/demo
-  // events that don't exist in real polling data.
-  const liveMatchupFor = (event) => matchups.find((m) => m.id === event.matchupId) || event.matchup;
+  // stats stay consistent) - but scores keep changing while a REAL event's
+  // screen is up, so those look up the current (grid-displayed) matchup by
+  // id instead of using the stale snapshot. A previewed event is different:
+  // its boost is deliberately not applied to the grid yet (see above), so
+  // it keeps using its own frozen, already-boosted snapshot so the takeover
+  // screen still shows the swing it's meant to demonstrate.
+  const liveMatchupFor = (event) =>
+    event.isPreview ? event.matchup : gridMatchups.find((m) => m.id === event.matchupId) || event.matchup;
 
   return (
     <div className="app">
@@ -59,7 +79,11 @@ export default function App() {
           </button>
           <button
             className="preview-btn"
-            onClick={() => injectEvent(createPreviewEvent(matchups, selectedIds))}
+            onClick={() => {
+              const event = createPreviewEvent(gridMatchups);
+              injectEvent(event);
+              pendingPreviewEventRef.current = event;
+            }}
             title="Preview the scoring-event takeover with sample data"
           >
             Preview event

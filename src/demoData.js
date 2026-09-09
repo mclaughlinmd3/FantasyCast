@@ -54,14 +54,28 @@ function demoMatchup() {
   };
 }
 
-// Picks a random starter from a random selected (or demo) matchup and
-// applies the point swing to a cloned matchup, so the takeover screen and
-// the summary screen that follows it agree with each other.
-export function createPreviewEvent(matchups, selectedIds) {
-  const selected = matchups.filter((m) => selectedIds.includes(m.id));
-  const baseMatchup = selected[Math.floor(Math.random() * selected.length)] || demoMatchup();
+function activePlayers(matchup) {
+  return matchup.teamA.starters.filter((p) => p.isActive).concat(
+    matchup.teamB.starters.filter((p) => p.isActive)
+  );
+}
 
-  const candidates = baseMatchup.teamA.starters.concat(baseMatchup.teamB.starters);
+// Picks a random currently-active starter from a random displayed matchup
+// (falling back to the built-in demo matchup if none of the displayed ones
+// have any active players right now) and applies the point swing to a
+// cloned matchup. Only picking from active starters matters because those
+// are the only players shown in the grid's active-players list - picking a
+// benched/inactive one would fire a takeover for someone who was never on
+// screen to begin with, making it impossible to see the reorder animation
+// this is often used to preview. Pass the same matchups the grid is
+// actually rendering (including the "Simulate active players" override) so
+// this stays in sync with what's on screen.
+export function createPreviewEvent(displayedMatchups) {
+  const withActivePlayers = displayedMatchups.filter((m) => activePlayers(m).length > 0);
+  const baseMatchup =
+    withActivePlayers[Math.floor(Math.random() * withActivePlayers.length)] || demoMatchup();
+
+  const candidates = activePlayers(baseMatchup);
   const player = candidates[Math.floor(Math.random() * candidates.length)];
   const isTeamA = baseMatchup.teamA.starters.some((p) => p.id === player.id);
   const teamKey = isTeamA ? 'teamA' : 'teamB';
@@ -80,6 +94,7 @@ export function createPreviewEvent(matchups, selectedIds) {
 
   return {
     id: `preview-${Date.now()}`,
+    isPreview: true,
     playerId: player.id,
     playerName: player.name,
     playerPhoto: player.photo,
@@ -92,4 +107,38 @@ export function createPreviewEvent(matchups, selectedIds) {
     newLive: round(player.live + PREVIEW_DELTA),
     playType: PREVIEW_PLAY_TYPES[Math.floor(Math.random() * PREVIEW_PLAY_TYPES.length)],
   };
+}
+
+// The takeover/summary screens get their boosted score from the event
+// object above, but that's just a snapshot for those two screens - it
+// doesn't touch the real matchup data the grid renders from. Without this,
+// returning to the grid after a preview would show the player back at
+// their original point total, with nothing to reorder. This re-applies the
+// same point bump to the real (or demo) matchup so the grid's
+// active-players list actually reflects it too, and the reorder animation
+// can be watched for real. Call it with the previewed event whenever
+// deriving what the grid should render.
+export function applyPreviewBoost(displayedMatchups, event) {
+  if (!event) return displayedMatchups;
+
+  const bumpTeam = (team) => ({
+    ...team,
+    score: round(team.score + event.delta),
+    starters: team.starters.map((p) =>
+      p.id === event.playerId ? { ...p, live: round(p.live + event.delta) } : p
+    ),
+  });
+
+  let matched = false;
+  const result = displayedMatchups.map((m) => {
+    if (m.id !== event.matchupId) return m;
+    const isTeamA = m.teamA.starters.some((p) => p.id === event.playerId);
+    if (!isTeamA && !m.teamB.starters.some((p) => p.id === event.playerId)) return m;
+    matched = true;
+    return isTeamA ? { ...m, teamA: bumpTeam(m.teamA) } : { ...m, teamB: bumpTeam(m.teamB) };
+  });
+
+  // The demo matchup isn't part of the real grid, so there's nothing to
+  // boost - the takeover/summary screens still show it correctly either way.
+  return matched ? result : displayedMatchups;
 }
