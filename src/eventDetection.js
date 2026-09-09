@@ -37,11 +37,23 @@ const SLEEPER_STAT_LABELS = {
   xp_made: 'Extra Point',
 };
 
+// Categories that are inherently notable regardless of point size - TDs,
+// turnovers, defensive/special-teams plays. Anything not in here is routine
+// accumulation (yardage, plain receptions) that only skill positions rack up
+// gradually, so it needs a much bigger jump to earn a takeover (see
+// YARDAGE_LIKE below).
+const YARDAGE_LIKE = new Set(['pass_yd', 'rush_yd', 'rec_yd', 'rec']);
+
+// Positions that routinely accumulate yardage/receptions in small chunks -
+// this is who "1 point for 10 yards doesn't need a whole animation" applies
+// to. Kickers, DSTs, etc. keep the normal threshold for everything.
+const YARDAGE_ONLY_POSITIONS = new Set(['QB', 'RB', 'WR', 'TE']);
+
 // Finds which raw stat category contributed the most fantasy points to a
 // player's live-score jump (e.g. a TD catch shows up as both `rec` and
 // `rec_td` - the touchdown's point value dominates, so it wins over "just"
 // a reception). Returns null if there's not enough data to tell.
-function describePlayType(prevStats, currentStats, weights) {
+function findDominantStatCategory(prevStats, currentStats, weights) {
   if (!prevStats || !currentStats || !weights) return null;
 
   let bestKey = null;
@@ -57,7 +69,11 @@ function describePlayType(prevStats, currentStats, weights) {
     }
   }
 
-  return bestKey ? SLEEPER_STAT_LABELS[bestKey] || null : null;
+  return bestKey;
+}
+
+function describePlayType(dominantKey) {
+  return dominantKey ? SLEEPER_STAT_LABELS[dominantKey] || null : null;
 }
 
 export function detectScoringEvents(
@@ -83,7 +99,16 @@ export function detectScoringEvents(
         if (!prevPlayer) continue;
 
         const delta = round(player.live - prevPlayer.live);
-        if (delta >= thresholdPoints) {
+        const dominantKey = findDominantStatCategory(prevPlayer.rawStats, player.rawStats, matchup.scoringWeights);
+
+        // Routine yardage/reception accumulation for skill positions needs a
+        // much bigger jump to count as "notable" - TDs and everything else
+        // keep the normal threshold. Players with no rawStats (ESPN) or no
+        // clear dominant category fall back to the normal threshold too.
+        const isRoutineYardage = dominantKey && YARDAGE_LIKE.has(dominantKey) && YARDAGE_ONLY_POSITIONS.has(player.position);
+        const requiredDelta = isRoutineYardage ? thresholdPoints * 2 : thresholdPoints;
+
+        if (delta >= requiredDelta) {
           events.push({
             id: `${player.id}-${Date.now()}`,
             playerId: player.id,
@@ -96,7 +121,7 @@ export function detectScoringEvents(
             matchup,
             delta,
             newLive: player.live,
-            playType: describePlayType(prevPlayer.rawStats, player.rawStats, matchup.scoringWeights),
+            playType: describePlayType(dominantKey),
           });
         }
       }
