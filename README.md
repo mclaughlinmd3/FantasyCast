@@ -105,7 +105,9 @@ yours (and your roommates') across any league. A matchup where exactly one
 side is marked colors that side green and the opponent red; a matchup
 where both or neither side is marked (e.g. two roommates playing each
 other) stays the neutral green/blue split. This applies everywhere - the
-grid, the event takeover, and the matchup summary.
+grid, the event takeover, and the matchup summary - and the green side is
+always shown on the left in all three places, regardless of whether it
+happens to be the platform's "team A" or "team B" for that matchup.
 
 ## Active players
 

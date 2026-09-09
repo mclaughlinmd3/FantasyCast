@@ -1,4 +1,4 @@
-import { getMatchupRoles } from '../teamRoles.js';
+import { getMatchupRoles, orderTeamsForDisplay } from '../teamRoles.js';
 
 function stillToPlay(team) {
   return team.starters.filter((p) => p.projected - p.live > 0);
@@ -26,13 +26,14 @@ function TeamColumn({ team, role }) {
 
 export default function MatchupSummary({ matchup, goodGuyIds }) {
   const roles = goodGuyIds ? getMatchupRoles(matchup, goodGuyIds) : { teamA: 'a', teamB: 'b' };
+  const { left, right } = orderTeamsForDisplay(matchup, roles);
   return (
     <div className="summary-screen">
       <div className="summary-league">{matchup.leagueName}</div>
       <div className="summary-teams">
-        <TeamColumn team={matchup.teamA} role={roles.teamA} />
+        <TeamColumn team={left.team} role={left.role} />
         <div className="summary-vs">VS</div>
-        <TeamColumn team={matchup.teamB} role={roles.teamB} />
+        <TeamColumn team={right.team} role={right.role} />
       </div>
     </div>
   );

@@ -11,3 +11,14 @@ export function getMatchupRoles(matchup, goodGuyIds) {
   if (bIsGood && !aIsGood) return { teamA: 'bad', teamB: 'good' };
   return { teamA: 'a', teamB: 'b' };
 }
+
+// Everywhere a matchup's two sides are laid out left-to-right, the green
+// side (the 'good' guy, or 'a' in the neutral no-one-marked case) should
+// always be on the left - teamA/teamB order in the underlying data doesn't
+// determine layout, since teamB is just as likely to be the marked side.
+export function orderTeamsForDisplay(matchup, roles) {
+  const teamAIsLeft = roles.teamA === 'good' || roles.teamA === 'a';
+  return teamAIsLeft
+    ? { left: { team: matchup.teamA, role: roles.teamA }, right: { team: matchup.teamB, role: roles.teamB } }
+    : { left: { team: matchup.teamB, role: roles.teamB }, right: { team: matchup.teamA, role: roles.teamA } };
+}

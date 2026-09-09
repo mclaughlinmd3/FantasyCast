@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getMatchupRoles } from '../teamRoles.js';
+import { getMatchupRoles, orderTeamsForDisplay } from '../teamRoles.js';
 import { formatStatLine } from '../playerStats.js';
 import { initials } from '../initials.js';
 import { useFlipList } from '../hooks/useFlipList.js';
@@ -69,6 +69,7 @@ function ActivePlayers({ team, role }) {
 
 export default function MatchupCard({ matchup, onRemove, goodGuyIds }) {
   const roles = goodGuyIds ? getMatchupRoles(matchup, goodGuyIds) : { teamA: 'a', teamB: 'b' };
+  const { left, right } = orderTeamsForDisplay(matchup, roles);
 
   return (
     <div className="matchup-card">
@@ -86,13 +87,13 @@ export default function MatchupCard({ matchup, onRemove, goodGuyIds }) {
         )}
       </div>
       <div className="teams">
-        <Team team={matchup.teamA} role={roles.teamA} />
+        <Team team={left.team} role={left.role} />
         <div className="vs">VS</div>
-        <Team team={matchup.teamB} role={roles.teamB} />
+        <Team team={right.team} role={right.role} />
       </div>
       <div className="active-players-row">
-        <ActivePlayers team={matchup.teamA} role={roles.teamA} />
-        <ActivePlayers team={matchup.teamB} role={roles.teamB} />
+        <ActivePlayers team={left.team} role={left.role} />
+        <ActivePlayers team={right.team} role={right.role} />
       </div>
     </div>
   );

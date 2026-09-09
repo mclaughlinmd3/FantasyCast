@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getMatchupRoles } from '../teamRoles.js';
+import { getMatchupRoles, orderTeamsForDisplay } from '../teamRoles.js';
 import { initials } from '../initials.js';
 
 export default function EventTakeover({ event, goodGuyIds }) {
@@ -7,6 +7,7 @@ export default function EventTakeover({ event, goodGuyIds }) {
   const showPhoto = event.playerPhoto && !photoFailed;
 
   const roles = goodGuyIds ? getMatchupRoles(event.matchup, goodGuyIds) : { teamA: 'a', teamB: 'b' };
+  const { left, right } = orderTeamsForDisplay(event.matchup, roles);
   const isTeamA = event.teamId
     ? event.matchup.teamA.id === event.teamId
     : event.matchup.teamA.name === event.teamName;
@@ -38,13 +39,13 @@ export default function EventTakeover({ event, goodGuyIds }) {
       </div>
 
       <div className="event-matchup-score">
-        <span className={`team-${roles.teamA}`}>{event.matchup.teamA.name}</span>
+        <span className={`team-${left.role}`}>{left.team.name}</span>
         <span className="event-matchup-score-values">
-          <span className={`team-${roles.teamA}`}>{event.matchup.teamA.score.toFixed(2)}</span>
+          <span className={`team-${left.role}`}>{left.team.score.toFixed(2)}</span>
           {' – '}
-          <span className={`team-${roles.teamB}`}>{event.matchup.teamB.score.toFixed(2)}</span>
+          <span className={`team-${right.role}`}>{right.team.score.toFixed(2)}</span>
         </span>
-        <span className={`team-${roles.teamB}`}>{event.matchup.teamB.name}</span>
+        <span className={`team-${right.role}`}>{right.team.name}</span>
       </div>
     </div>
   );
