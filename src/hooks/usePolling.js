@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as sleeper from '../api/sleeper.js';
 import * as espn from '../api/espn.js';
-import { getTeamGameStatus } from '../api/nflSchedule.js';
+import { getTeamGameStatus, isGameLiveOrSoon } from '../api/nflSchedule.js';
 
 const DEFAULT_REFRESH_SECONDS = 30;
 
@@ -10,7 +10,7 @@ function annotateActivePlayers(matchup, gameStatusByTeam) {
     ...team,
     starters: team.starters.map((p) => ({
       ...p,
-      isActive: p.nflTeam ? gameStatusByTeam.get(p.nflTeam) === 'in' : false,
+      isActive: p.nflTeam ? isGameLiveOrSoon(gameStatusByTeam.get(p.nflTeam)) : false,
     })),
   });
   return { ...matchup, teamA: annotateTeam(matchup.teamA), teamB: annotateTeam(matchup.teamB) };

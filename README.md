@@ -114,13 +114,16 @@ by live points, so the top performers show first if more than 5 are
 playing), filling the space below the score instead of leaving it empty.
 When the ranking changes between polls, players smoothly slide to their
 new position instead of snapping (see `src/hooks/useFlipList.js`).
-"Active" means their real NFL game is currently in
-progress - fantasy point totals alone can't tell a bye week or "hasn't
-played yet" from "playing right now," so this is pulled from ESPN's
-separate public game-schedule API (unauthenticated, not the fantasy API)
-and matched to each player by their NFL team. Before any games kick off,
-or for players not currently in a live game, the card shows "No active
-players" for that team rather than guessing.
+"Active" means their real NFL game is currently in progress, or kicks off
+within the next 15 minutes - fantasy point totals alone can't tell a bye
+week or "hasn't played yet" from "playing right now," so this is pulled
+from ESPN's separate public game-schedule API (unauthenticated, not the
+fantasy API) and matched to each player by their NFL team. Only rostered
+starters are ever shown - bench/IR players are excluded before this check
+even applies (Sleeper's own `starters` list, ESPN's non-bench lineup
+slots). Before any game is live or imminent, or for players not currently
+in that window, the card shows "No active players" for that team rather
+than guessing.
 
 Each active player shows a photo (falls back to initials if it fails to
 load), name, live points, and - for Sleeper players only - a short
