@@ -33,6 +33,14 @@ export default function App() {
   const [simulateActive, setSimulateActive] = useState(false);
   const gridMatchups = simulateActive ? simulateActivePlayers(selectedMatchups) : selectedMatchups;
 
+  // The event/summary screens capture a snapshot of the matchup at the
+  // moment the event fired (needed so the triggering player's before/after
+  // stats stay consistent) - but scores keep changing while that screen is
+  // up, so look up the current live matchup by id to display instead of the
+  // stale snapshot. Falls back to the snapshot for synthetic preview/demo
+  // events that don't exist in real polling data.
+  const liveMatchupFor = (event) => matchups.find((m) => m.id === event.matchupId) || event.matchup;
+
   return (
     <div className="app">
       {phase === 'grid' && (
@@ -76,19 +84,30 @@ export default function App() {
       )}
       {loading && !error && <div className="app-loading">Loading matchups&hellip;</div>}
 
-      {!loading && !error && phase === 'grid' && (
-        <Grid
-          matchups={gridMatchups}
-          onRemove={toggle}
-          onOpenSettings={() => setSettingsOpen(true)}
-          goodGuyIds={goodGuyIds}
-        />
-      )}
-      {phase === 'event' && currentEvent && (
-        <EventTakeover event={currentEvent} goodGuyIds={goodGuyIds} />
-      )}
-      {phase === 'summary' && currentEvent && (
-        <MatchupSummary matchup={currentEvent.matchup} goodGuyIds={goodGuyIds} />
+      {!loading && !error && (
+        <div className="stage">
+          {/* Stays mounted (just hidden) during a takeover instead of
+              unmounting, so the active-players reorder animation keeps its
+              last-known positions and can animate the moment it's visible
+              again, instead of losing its baseline on every remount. */}
+          <div className={`grid-stage${phase !== 'grid' ? ' grid-stage-hidden' : ''}`}>
+            <Grid
+              matchups={gridMatchups}
+              onRemove={toggle}
+              onOpenSettings={() => setSettingsOpen(true)}
+              goodGuyIds={goodGuyIds}
+            />
+          </div>
+          {phase === 'event' && currentEvent && (
+            <EventTakeover
+              event={{ ...currentEvent, matchup: liveMatchupFor(currentEvent) }}
+              goodGuyIds={goodGuyIds}
+            />
+          )}
+          {phase === 'summary' && currentEvent && (
+            <MatchupSummary matchup={liveMatchupFor(currentEvent)} goodGuyIds={goodGuyIds} />
+          )}
+        </div>
       )}
 
       {settingsOpen && (

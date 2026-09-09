@@ -174,29 +174,40 @@ relies on the same raw per-category stats used for play-type detection
 use the normal threshold, on any platform. When the grid is idle, the
 highest-point-swing event in the queue takes over the screen:
 
-1. **~10s player takeover** - a punchy pop-in animation, play-type
+1. **~7s player takeover** - a punchy pop-in animation, play-type
    headline (e.g. "RECEIVING TOUCHDOWN", Sleeper only for now - see
    below), point swing, player photo/name, and a big team-name callout
    color-matched to that team's side of the matchup, plus a compact score
-   line for the whole matchup.
-2. **~6s matchup summary** - full score plus who's still left to play on
-   each team.
+   line for the whole matchup - kept live for the whole time it's on
+   screen, not frozen at the moment the play happened.
+2. **~4s matchup summary** - full score plus who's still left to play on
+   each team, also kept live.
 3. Back to the grid.
 
 If more events land while one is playing, they queue and play in order
-(biggest swing first) instead of being dropped. The settings gear is
-always on screen (even mid-takeover) so the 4 displayed matchups can be
-changed at any time, not just while looking at the grid - and the settings
-list shows each matchup's live score so it's easy to see what's actually
-close before picking.
+(biggest swing first) instead of being dropped. If the queue still has
+events waiting when a player takeover finishes, it skips straight to the
+next takeover instead of also playing the summary screen in between - so
+a burst of real scoring plays doesn't stack up full-length cycles and
+keep the screen away from the live grid for a long stretch. The settings
+gear is always on screen (even mid-takeover) so the 4 displayed matchups
+can be changed at any time, not just while looking at the grid - and the
+settings list shows each matchup's live score so it's easy to see what's
+actually close before picking.
+
+The grid itself stays mounted (just visually hidden) behind the takeover
+screens rather than unmounting, so the active-players list still has its
+last-known positions on hand and animates the reorder the instant it's
+visible again, instead of that first reorder after a takeover silently
+snapping into place.
 
 **Tuning the feel**: three optional `config.json` fields control this,
 all with sane defaults if omitted:
 
 ```json
 "eventThresholdPoints": 4,
-"eventDurationSeconds": 10,
-"summaryDurationSeconds": 6
+"eventDurationSeconds": 7,
+"summaryDurationSeconds": 4
 ```
 
 Lower the threshold to catch smaller plays (e.g. a long completion without

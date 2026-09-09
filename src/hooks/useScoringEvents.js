@@ -17,6 +17,8 @@ export function useScoringEvents(matchups, selectedIds, options = {}) {
   const [queue, setQueue] = useState([]);
   const [phase, setPhase] = useState('grid'); // 'grid' | 'event' | 'summary'
   const [current, setCurrent] = useState(null);
+  const queueRef = useRef(queue);
+  queueRef.current = queue;
 
   // Detect new events whenever a fresh poll lands, then update the
   // baseline snapshot (for every matchup, not just selected ones, so
@@ -48,10 +50,17 @@ export function useScoringEvents(matchups, selectedIds, options = {}) {
     }
   }, [phase, queue]);
 
-  // Advance event -> summary -> grid on a timer.
+  // Advance event -> summary -> grid on a timer. If more events are already
+  // queued up by the time this one's takeover finishes, skip straight back
+  // to 'grid' (which immediately pops the next event, below) instead of
+  // also playing the summary screen - otherwise a burst of scores in a
+  // short window stacks up full event+summary cycles and keeps the screen
+  // away from the live grid for a long stretch.
   useEffect(() => {
     if (phase === 'event') {
-      const t = setTimeout(() => setPhase('summary'), eventDurationMs);
+      const t = setTimeout(() => {
+        setPhase(queueRef.current.length > 0 ? 'grid' : 'summary');
+      }, eventDurationMs);
       return () => clearTimeout(t);
     }
     if (phase === 'summary') {
