@@ -1,16 +1,13 @@
 # FantasyCast
 
 A live fantasy football scoreboard for a second screen. Shows up to 4
-matchups at once - team names, live scores, a win-probability bar computed
-from current score plus each team's remaining projected points, and each
-team's currently-active players - pulled from Sleeper and private ESPN
-leagues.
+matchups at once - team names, live scores, and each team's currently-active
+players - pulled from Sleeper and private ESPN leagues.
 
 ## How it's built
 
 - **`src/`** - a single-page React app (built with Vite) that does all the
-  polling, normalization, and win-probability math client-side. No app
-  state lives on the server.
+  polling and normalization client-side. No app state lives on the server.
 - **`server/`** - a deliberately thin Express server. It exists only to (a)
   keep your ESPN login cookies out of the browser, and (b) avoid any CORS
   issues, by proxying `/api/sleeper/*` and `/api/espn/:leagueId` to the
@@ -101,25 +98,6 @@ Open `http://localhost:4000`.
    so they persist across reloads. Each card also has an `x` to quickly
    pull it out of the grid.
 
-## How win probability is calculated
-
-For each team: `estimated final = current score + sum of (projected - live)
-for each starter who hasn't yet matched their projection`. That gap between
-the two teams' estimated finals is run through a logistic curve whose
-steepness relaxes as fewer starters are still "in doubt" - a big early lead
-reads as close, a small lead with nobody left to play reads as
-near-certain. It's a glanceable estimate for a TV screen, not a rigorous
-model (see `src/winProbability.js`).
-
-The steepness constant (`PER_PLAYER_SIGMA`, currently 11 "points of
-uncertainty" per still-in-doubt starter) was nudged up from an initial
-guess of 6 after comparing one real matchup against ESPN's own
-in-app probability (ours ran a bit overconfident at 37/63 vs. their
-43/57; 11 lines up closely). It's one calibration point, not a proof this
-matches ESPN/Sleeper's own (undisclosed) models in general - if you
-compare more matchups against either app and ours is consistently off in
-one direction, that's a useful signal to retune this constant further.
-
 ## Good guys / bad guys
 
 Click the settings gear and open "Your teams" to mark which teams are
@@ -131,10 +109,10 @@ grid, the event takeover, and the matchup summary.
 
 ## Active players
 
-Each matchup card shows up to 4 currently-active players per team (sorted
-by live points, so the top performers show first if more than 4 are
-playing), filling the space below the score/win-probability bar instead of
-leaving it empty. "Active" means their real NFL game is currently in
+Each matchup card shows up to 5 currently-active players per team (sorted
+by live points, so the top performers show first if more than 5 are
+playing), filling the space below the score instead of leaving it empty.
+"Active" means their real NFL game is currently in
 progress - fantasy point totals alone can't tell a bye week or "hasn't
 played yet" from "playing right now," so this is pulled from ESPN's
 separate public game-schedule API (unauthenticated, not the fantasy API)
@@ -163,12 +141,12 @@ off.
 - **ESPN player-level data is reverse-engineered.** ESPN has no public API
   docs. Team names, records, and total scores are solid, but if
   projected/live *player* points don't populate for an ESPN matchup, the
-  win-probability bar just falls back to being score-only for that
-  matchup - the rest of the app still works. Flag it if you hit this and
-  the parsing in `src/api/espn.js` can be adjusted.
+  "still to play" list in the matchup-summary screen just comes up empty
+  for that matchup - the rest of the app still works. Flag it if you hit
+  this and the parsing in `src/api/espn.js` can be adjusted.
 - **Sleeper projections come from an undocumented endpoint.** If it ever
   changes shape, projections silently stop populating rather than crashing
-  the app (same score-only fallback as above).
+  the app (same empty-list fallback as above).
 - **ESPN's NFL-team mapping (for the active-players feature) is also
   best-effort**, reconstructed from memory since ESPN doesn't document it.
   If ESPN players never show as "active" even during a live game, this

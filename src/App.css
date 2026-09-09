@@ -205,45 +205,11 @@
   flex-shrink: 0;
 }
 
-.win-prob {
-  margin-top: 0.3vh;
-}
-
-.win-prob-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: clamp(0.65rem, 0.85vw, 0.8rem);
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-  margin-bottom: 0.25vh;
-}
-
-.win-prob-bar {
-  display: flex;
-  height: 0.55rem;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--panel-border);
-}
-
-.win-prob-fill-a,
-.win-prob-fill-good {
-  background: var(--good);
-}
-
-.win-prob-fill-b {
-  background: var(--team-b);
-}
-
-.win-prob-fill-bad {
-  background: var(--bad);
-}
-
 .active-players-row {
   flex: 1;
   display: flex;
   gap: 1.2rem;
-  margin-top: 0.6vh;
+  margin-top: 1vh;
   min-height: 0;
   overflow: hidden;
 }
