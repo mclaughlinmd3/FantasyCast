@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 
-const DURATION_MS = 280;
+const DURATION_MS = 600;
 // A "back out" curve that overshoots slightly past the resting position
 // before settling - reads as a snappy pop rather than a flat slide.
 const EASING = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
