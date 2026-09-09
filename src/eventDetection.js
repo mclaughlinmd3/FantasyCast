@@ -6,8 +6,8 @@
 
 // Defaults, used when config.json doesn't override them (see /api/config).
 export const DEFAULT_SIGNIFICANT_DELTA = 4; // fantasy points - roughly one TD or bigger
-export const DEFAULT_EVENT_DURATION_MS = 7000;
-export const DEFAULT_SUMMARY_DURATION_MS = 4000;
+export const DEFAULT_EVENT_DURATION_MS = 5000;
+export const DEFAULT_SUMMARY_DURATION_MS = 3000;
 
 function round(n) {
   return Math.round(n * 100) / 100;

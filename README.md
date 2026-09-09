@@ -164,11 +164,12 @@ off.
 
 ## Event takeover
 
-Every poll, the app diffs each displayed matchup's starters against the
-previous poll. Any starter whose live points jumped by the threshold
-(default 4, see below) queues an event - except that for QB/RB/WR/TE,
-routine yardage/reception accumulation (no touchdown or turnover
-involved) needs *double* the threshold to queue, so a 1-point completion
+Every poll (every 15s by default - `refreshIntervalSeconds` in
+`config.json` controls this), the app diffs each displayed matchup's
+starters against the previous poll. Any starter whose live points jumped
+by the threshold (default 4, see below) queues an event - except that for
+QB/RB/WR/TE, routine yardage/reception accumulation (no touchdown or
+turnover involved) needs *double* the threshold to queue, so a 1-point completion
 or a 10-yard carry doesn't trigger a full-screen takeover the way an
 actual touchdown does. This only applies to Sleeper players, since it
 relies on the same raw per-category stats used for play-type detection
@@ -176,13 +177,13 @@ relies on the same raw per-category stats used for play-type detection
 use the normal threshold, on any platform. When the grid is idle, the
 highest-point-swing event in the queue takes over the screen:
 
-1. **~7s player takeover** - a punchy pop-in animation, play-type
+1. **~5s player takeover** - a punchy pop-in animation, play-type
    headline (e.g. "RECEIVING TOUCHDOWN", Sleeper only for now - see
    below), point swing, player photo/name, and a big team-name callout
    color-matched to that team's side of the matchup, plus a compact score
    line for the whole matchup - kept live for the whole time it's on
    screen, not frozen at the moment the play happened.
-2. **~4s matchup summary** - full score plus who's still left to play on
+2. **~3s matchup summary** - full score plus who's still left to play on
    each team, also kept live.
 3. Back to the grid.
 
@@ -208,8 +209,8 @@ all with sane defaults if omitted:
 
 ```json
 "eventThresholdPoints": 4,
-"eventDurationSeconds": 7,
-"summaryDurationSeconds": 4
+"eventDurationSeconds": 5,
+"summaryDurationSeconds": 3
 ```
 
 Lower the threshold to catch smaller plays (e.g. a long completion without

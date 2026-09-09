@@ -3,7 +3,7 @@ import * as sleeper from '../api/sleeper.js';
 import * as espn from '../api/espn.js';
 import { getTeamGameStatus, isGameLiveOrSoon } from '../api/nflSchedule.js';
 
-const DEFAULT_REFRESH_SECONDS = 30;
+const DEFAULT_REFRESH_SECONDS = 15;
 
 function annotateActivePlayers(matchup, gameStatusByTeam) {
   const annotateTeam = (team) => ({
