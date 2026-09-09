@@ -1,8 +1,8 @@
 // Normalizes ESPN's (undocumented) fantasy API into the shared matchup/player
 // shape used by the rest of the app. ESPN has no official public docs for
 // this API, so field names below are reverse-engineered and defensively
-// optional-chained: a shape mismatch degrades the win-probability estimate
-// (falls back to score-only) rather than crashing the app.
+// optional-chained: a shape mismatch degrades gracefully (e.g. a missing
+// league name falls back to a generic placeholder) rather than crashing.
 
 const BENCH_SLOT_IDS = new Set([20, 21]); // BE, IR
 
@@ -13,6 +13,7 @@ async function fetchJson(leagueId, season, week) {
   params.append('view', 'mMatchup');
   params.append('view', 'mTeam');
   params.append('view', 'mBoxscore');
+  params.append('view', 'mSettings'); // needed for data.settings.name (the real league title)
 
   const res = await fetch(`/api/espn/${leagueId}?${params.toString()}`);
   if (!res.ok) {
