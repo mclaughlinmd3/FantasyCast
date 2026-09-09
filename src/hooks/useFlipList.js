@@ -1,6 +1,9 @@
 import { useLayoutEffect, useRef } from 'react';
 
-const DURATION_MS = 450;
+const DURATION_MS = 280;
+// A "back out" curve that overshoots slightly past the resting position
+// before settling - reads as a snappy pop rather than a flat slide.
+const EASING = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
 
 // FLIP-style reorder animation for a vertical list: when items keyed by id
 // change order between renders, this makes them visibly slide from their
@@ -37,14 +40,16 @@ export function useFlipList(orderKey) {
       if (prevTop != null && prevTop !== top) {
         const delta = prevTop - top;
         el.style.transition = 'none';
-        el.style.transform = `translateY(${delta}px)`;
+        // A slight starting scale-up on top of the position offset gives
+        // the settle a bit of "pop" instead of just a flat slide.
+        el.style.transform = `translateY(${delta}px) scale(1.06)`;
         // Force a reflow so the browser registers the starting transform
         // before the transition below is applied - otherwise it'd just
         // jump straight to the final position with no animation.
         // eslint-disable-next-line no-unused-expressions
         el.getBoundingClientRect();
         requestAnimationFrame(() => {
-          el.style.transition = `transform ${DURATION_MS}ms ease`;
+          el.style.transition = `transform ${DURATION_MS}ms ${EASING}`;
           el.style.transform = '';
         });
       }
