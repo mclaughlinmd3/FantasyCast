@@ -4,6 +4,7 @@ import { formatStatLine } from '../playerStats.js';
 import { initials } from '../initials.js';
 import { nflTeamLogoUrl } from '../nflTeamLogos.js';
 import { useFlipList } from '../hooks/useFlipList.js';
+import TeamLogo from './TeamLogo.jsx';
 
 const MAX_ACTIVE_SHOWN = 5;
 
@@ -14,20 +15,6 @@ function Team({ team, role }) {
       {team.manager && <div className="team-manager">{team.manager}</div>}
       <div className="team-score">{team.score.toFixed(2)}</div>
     </div>
-  );
-}
-
-// Small logo shown flanking the "VS" divider rather than above the team
-// name - keeps the name/score/active-players list at their existing size
-// instead of the logo eating into that space.
-function VsLogo({ team }) {
-  const [logoFailed, setLogoFailed] = useState(false);
-  const showLogo = team.avatar && !logoFailed;
-
-  return showLogo ? (
-    <img className="vs-logo" src={team.avatar} alt="" onError={() => setLogoFailed(true)} />
-  ) : (
-    <div className="vs-logo vs-logo-fallback">{initials(team.name)}</div>
   );
 }
 
@@ -108,9 +95,9 @@ export default function MatchupCard({ matchup, onRemove, goodGuyIds }) {
       <div className="teams">
         <Team team={left.team} role={left.role} />
         <div className="vs-block">
-          <VsLogo team={left.team} />
+          <TeamLogo team={left.team} className="vs-logo" />
           <span className="vs">VS</span>
-          <VsLogo team={right.team} />
+          <TeamLogo team={right.team} className="vs-logo" />
         </div>
         <Team team={right.team} role={right.role} />
       </div>
