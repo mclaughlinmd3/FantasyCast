@@ -154,6 +154,17 @@ forces your real starters to show as active (using their real, currently
 0, stats) without touching any actual data. Click it again to turn it
 off.
 
+## Red zone highlight
+
+A player whose NFL team currently has the ball in the red zone gets a
+glowing orange outline and an "RZ" badge next to their name in the
+active-players list - only the offense, not the defense on the other
+side of the same game. Pulled from the same public ESPN scoreboard feed
+already used for the "active" check, which carries a live down/distance/
+possession/red-zone `situation` while a game is in progress - if that
+game doesn't have one yet (not live, or ESPN hasn't posted it), nobody
+on either side is flagged, rather than guessing.
+
 ## Known rough edges
 
 - **ESPN player-level data is reverse-engineered.** ESPN has no public API
@@ -169,6 +180,9 @@ off.
   best-effort**, reconstructed from memory since ESPN doesn't document it.
   If ESPN players never show as "active" even during a live game, this
   mapping (`PRO_TEAMS` in `src/api/espn.js`) is the first place to check.
+- **The red-zone `situation` field is also unofficial** - ESPN's public
+  scoreboard API has no docs for it either. If it's ever missing/renamed,
+  the highlight just never lights up rather than crashing anything.
 - A league that fails to fetch on a given poll (bad ID, expired ESPN
   cookie, transient network blip) is skipped for that cycle and logged to
   the browser console - it doesn't take down the other leagues.

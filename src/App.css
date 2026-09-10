@@ -313,6 +313,39 @@
   gap: 0.6rem;
 }
 
+/* Padding + matching negative margin keeps the highlighted row's footprint
+   the same as an unhighlighted one, so it doesn't push the list taller or
+   shift other rows - it just visually bleeds into the existing gap. */
+.active-player-redzone {
+  background: var(--redzone-dim);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--redzone);
+  padding: 0.15rem 0.4rem;
+  margin: -0.15rem -0.4rem;
+  animation: redzone-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes redzone-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px var(--redzone);
+  }
+  50% {
+    box-shadow: 0 0 0 1px var(--redzone), 0 0 10px 1px var(--redzone);
+  }
+}
+
+.redzone-badge {
+  flex-shrink: 0;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  background: var(--redzone);
+  color: #1a1006;
+  font-size: 0.65em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
 .active-player-photo {
   width: clamp(2.2rem, 3.4vw, 3.2rem);
   height: clamp(2.2rem, 3.4vw, 3.2rem);
@@ -346,10 +379,18 @@
   min-width: 0;
 }
 
+.active-player-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
 .active-player-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
   color: var(--text);
   font-weight: 700;
   font-size: clamp(1rem, 1.5vw, 1.35rem);

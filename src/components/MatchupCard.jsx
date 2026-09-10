@@ -28,7 +28,7 @@ function ActivePlayerRow({ player, listRef }) {
   const statLine = formatStatLine(player);
 
   return (
-    <li ref={listRef}>
+    <li ref={listRef} className={player.isRedZone ? 'active-player-redzone' : undefined}>
       {showPhoto ? (
         <img
           className={`active-player-photo${isDefense ? ' active-player-photo-defense' : ''}`}
@@ -42,7 +42,10 @@ function ActivePlayerRow({ player, listRef }) {
         </div>
       )}
       <div className="active-player-info">
-        <div className="active-player-name">{player.name}</div>
+        <div className="active-player-name-row">
+          <span className="active-player-name">{player.name}</span>
+          {player.isRedZone && <span className="redzone-badge">RZ</span>}
+        </div>
         {statLine && <div className="active-player-stat-line">{statLine}</div>}
       </div>
       <span className="active-player-pts">{player.live.toFixed(1)}</span>

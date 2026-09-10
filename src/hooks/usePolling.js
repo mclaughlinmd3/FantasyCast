@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as sleeper from '../api/sleeper.js';
 import * as espn from '../api/espn.js';
-import { getTeamGameStatus, isGameLiveOrSoon } from '../api/nflSchedule.js';
+import { getTeamGameStatus, isGameLiveOrSoon, isTeamInRedZone } from '../api/nflSchedule.js';
 
 const DEFAULT_REFRESH_SECONDS = 15;
 
 function annotateActivePlayers(matchup, gameStatusByTeam) {
   const annotateTeam = (team) => ({
     ...team,
-    starters: team.starters.map((p) => ({
-      ...p,
-      isActive: p.nflTeam ? isGameLiveOrSoon(gameStatusByTeam.get(p.nflTeam)) : false,
-    })),
+    starters: team.starters.map((p) => {
+      const gameInfo = p.nflTeam ? gameStatusByTeam.get(p.nflTeam) : null;
+      return {
+        ...p,
+        isActive: isGameLiveOrSoon(gameInfo),
+        isRedZone: isTeamInRedZone(gameInfo),
+      };
+    }),
   });
   return { ...matchup, teamA: annotateTeam(matchup.teamA), teamB: annotateTeam(matchup.teamB) };
 }
