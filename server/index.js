@@ -153,6 +153,57 @@ app.get('/api/espn/:leagueId', async (req, res) => {
   }
 });
 
+// ESPN serves custom-uploaded team/league logos from a separate API-style
+// host (mystique-api.fantasy.espn.com/apis/.../images/...) that needs the
+// same espn_s2/SWID auth as the main fantasy API - loading it directly as
+// a browser <img src> failed, most likely because ESPN's session cookies
+// are scoped SameSite in a way that browsers won't attach on a cross-site
+// image request (localhost -> espn.com), the same reason the main API
+// calls are proxied server-side rather than called directly from the
+// browser. Re-fetches the image here with the cookies attached and
+// streams the bytes back.
+app.get('/api/espn-image', async (req, res) => {
+  const { url } = req.query;
+  if (!url) {
+    return res.status(400).json({ error: 'url query param is required' });
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return res.status(400).json({ error: 'url query param is not a valid URL' });
+  }
+  // Restricted to ESPN's own hosts so this can't be used as an open proxy
+  // for arbitrary URLs.
+  if (parsed.protocol !== 'https:' || !parsed.hostname.endsWith('.espn.com')) {
+    return res.status(400).json({ error: 'url must be an https://*.espn.com URL' });
+  }
+  if (!config.espn || !config.espn.s2 || !config.espn.swid) {
+    return res.status(500).json({ error: 'ESPN cookies are not configured in config.json' });
+  }
+
+  try {
+    const upstream = await fetch(parsed.toString(), {
+      headers: {
+        Cookie: `espn_s2=${config.espn.s2}; SWID=${config.espn.swid}`,
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    });
+    if (!upstream.ok) {
+      res.status(upstream.status).end();
+      return;
+    }
+    const contentType = upstream.headers.get('content-type') || 'image/png';
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+    res.status(200).type(contentType).send(buffer);
+  } catch (err) {
+    console.error(`ESPN image proxy failed for ${parsed.toString()}:`, err.message);
+    res.status(502).end();
+  }
+});
+
 // ESPN's public (non-fantasy, no-auth) scoreboard API - used only to know
 // which NFL games are currently in progress, so the grid can show "active"
 // players. Different host/API entirely from the fantasy endpoints above.

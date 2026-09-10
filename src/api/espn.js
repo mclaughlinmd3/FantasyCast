@@ -71,7 +71,12 @@ function buildTeam(side, leagueId, teamsById, memberById, week) {
     // points are already live, which showed up as the team total sitting at
     // 0 while every player on the card clearly had points.
     score: round(starters.reduce((sum, p) => sum + p.live, 0)),
-    avatar: team?.logo || null,
+    // ESPN serves custom team logos from an authenticated API host, not a
+    // plain public CDN - loading that URL directly as an <img src> fails
+    // (no session for that host from the browser). Routed through our own
+    // proxy, which re-fetches it with the espn_s2/SWID cookies attached,
+    // the same way the main league-data requests already work.
+    avatar: team?.logo ? `/api/espn-image?url=${encodeURIComponent(team.logo)}` : null,
     record: `${wins}-${losses}`,
     starters,
   };
