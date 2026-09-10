@@ -137,10 +137,13 @@ headshots, so they show their NFL team's crest instead (from ESPN's
 public logo CDN, unauthenticated - independent of which platform the
 defense's league is on).
 
-Each team also shows its actual fantasy team logo/avatar next to its
-name (the grid card and the matchup summary screen) - Sleeper's
+Each team's actual fantasy team logo/avatar shows too - Sleeper's
 user-uploaded avatar, or ESPN's team logo - falling back to the team's
-initials if it doesn't have one set or the image fails to load.
+initials if it doesn't have one set or the image fails to load. On the
+grid card it's a small icon flanking the "VS" divider rather than sized
+above the team name, so it doesn't take space away from the name/score
+or the active-players list below it; on the matchup summary screen
+(more room to spare) it sits above the team name.
 
 **Before the season starts** there's nothing to show here - real players
 only count as "active" once their actual NFL game is underway, so this

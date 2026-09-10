@@ -8,25 +8,26 @@ import { useFlipList } from '../hooks/useFlipList.js';
 const MAX_ACTIVE_SHOWN = 5;
 
 function Team({ team, role }) {
-  const [logoFailed, setLogoFailed] = useState(false);
-  const showLogo = team.avatar && !logoFailed;
-
   return (
     <div className={`team team-${role}`}>
-      {showLogo ? (
-        <img
-          className="team-logo"
-          src={team.avatar}
-          alt=""
-          onError={() => setLogoFailed(true)}
-        />
-      ) : (
-        <div className="team-logo team-logo-fallback">{initials(team.name)}</div>
-      )}
       <div className="team-name">{team.name}</div>
       {team.manager && <div className="team-manager">{team.manager}</div>}
       <div className="team-score">{team.score.toFixed(2)}</div>
     </div>
+  );
+}
+
+// Small logo shown flanking the "VS" divider rather than above the team
+// name - keeps the name/score/active-players list at their existing size
+// instead of the logo eating into that space.
+function VsLogo({ team }) {
+  const [logoFailed, setLogoFailed] = useState(false);
+  const showLogo = team.avatar && !logoFailed;
+
+  return showLogo ? (
+    <img className="vs-logo" src={team.avatar} alt="" onError={() => setLogoFailed(true)} />
+  ) : (
+    <div className="vs-logo vs-logo-fallback">{initials(team.name)}</div>
   );
 }
 
@@ -106,7 +107,11 @@ export default function MatchupCard({ matchup, onRemove, goodGuyIds }) {
       </div>
       <div className="teams">
         <Team team={left.team} role={left.role} />
-        <div className="vs">VS</div>
+        <div className="vs-block">
+          <VsLogo team={left.team} />
+          <span className="vs">VS</span>
+          <VsLogo team={right.team} />
+        </div>
         <Team team={right.team} role={right.role} />
       </div>
       <div className="active-players-row">

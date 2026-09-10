@@ -243,10 +243,36 @@
   color: var(--bad);
 }
 
+.vs-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .vs {
   color: var(--muted);
   font-size: clamp(0.7rem, 0.9vw, 0.9rem);
   flex-shrink: 0;
+}
+
+.vs-logo {
+  width: clamp(1.6rem, 2.4vw, 2.2rem);
+  height: clamp(1.6rem, 2.4vw, 2.2rem);
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg);
+  border: 1px solid var(--panel-border);
+  flex-shrink: 0;
+}
+
+.vs-logo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.6rem, 0.85vw, 0.75rem);
+  font-weight: 700;
+  color: var(--text);
 }
 
 .active-players-row {
