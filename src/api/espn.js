@@ -6,6 +6,19 @@
 
 const BENCH_SLOT_IDS = new Set([20, 21]); // BE, IR
 
+// Only ESPN's own *.espn.com-hosted images (custom-uploaded team logos)
+// need the cookie-authenticated proxy - ESPN's generic/default team logos
+// are served from a separate plain public CDN domain that already loads
+// fine directly, and would get wrongly rejected if routed through the
+// proxy too (its allowlist is deliberately espn.com-only).
+function needsEspnImageProxy(url) {
+  try {
+    return new URL(url).hostname.endsWith('.espn.com');
+  } catch {
+    return false;
+  }
+}
+
 async function fetchJson(leagueId, season, week) {
   const params = new URLSearchParams();
   params.append('season', season);
@@ -71,12 +84,15 @@ function buildTeam(side, leagueId, teamsById, memberById, week) {
     // points are already live, which showed up as the team total sitting at
     // 0 while every player on the card clearly had points.
     score: round(starters.reduce((sum, p) => sum + p.live, 0)),
-    // ESPN serves custom team logos from an authenticated API host, not a
-    // plain public CDN - loading that URL directly as an <img src> fails
-    // (no session for that host from the browser). Routed through our own
-    // proxy, which re-fetches it with the espn_s2/SWID cookies attached,
-    // the same way the main league-data requests already work.
-    avatar: team?.logo ? `/api/espn-image?url=${encodeURIComponent(team.logo)}` : null,
+    // Custom-uploaded team logos live on an authenticated *.espn.com API
+    // host and need the cookie-proxy (see needsEspnImageProxy above);
+    // ESPN's generic default logos are already on a plain public CDN and
+    // load fine as-is, so only wrap the ones that actually need it.
+    avatar: team?.logo
+      ? needsEspnImageProxy(team.logo)
+        ? `/api/espn-image?url=${encodeURIComponent(team.logo)}`
+        : team.logo
+      : null,
     record: `${wins}-${losses}`,
     starters,
   };
