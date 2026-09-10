@@ -65,7 +65,12 @@ function buildTeam(side, leagueId, teamsById, memberById, week) {
     id: `espn-${leagueId}-${side.teamId}`,
     name: teamDisplayName(team, side.teamId),
     manager: teamManagerName(team, memberById),
-    score: round(side.totalPoints || 0),
+    // Summed from the starters actually shown, rather than trusting ESPN's
+    // own `totalPoints` field directly - that field can lag behind (or not
+    // be populated yet) during live scoring even though individual players'
+    // points are already live, which showed up as the team total sitting at
+    // 0 while every player on the card clearly had points.
+    score: round(starters.reduce((sum, p) => sum + p.live, 0)),
     avatar: team?.logo || null,
     record: `${wins}-${losses}`,
     starters,

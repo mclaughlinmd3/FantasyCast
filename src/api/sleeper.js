@@ -146,7 +146,12 @@ function buildTeam(entry, leagueId, rosterById, userById, projections, rawStats,
     id: `sleeper-${leagueId}-${entry.roster_id}`,
     name: teamName,
     manager: user?.display_name || null,
-    score: round(entry.points || 0),
+    // Summed from the starters actually shown, rather than trusting Sleeper's
+    // own `points` field directly - that field can lag behind (or not be
+    // populated yet) during live scoring even though individual players'
+    // points are already live, which showed up as the team total sitting at
+    // 0 while every player on the card clearly had points.
+    score: round(starters.reduce((sum, p) => sum + p.live, 0)),
     avatar: user?.avatar ? `https://sleepercdn.com/avatars/${user.avatar}` : null,
     record: `${wins}-${losses}`,
     starters,
