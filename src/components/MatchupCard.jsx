@@ -2,13 +2,27 @@ import { useState } from 'react';
 import { getMatchupRoles, orderTeamsForDisplay } from '../teamRoles.js';
 import { formatStatLine } from '../playerStats.js';
 import { initials } from '../initials.js';
+import { nflTeamLogoUrl } from '../nflTeamLogos.js';
 import { useFlipList } from '../hooks/useFlipList.js';
 
 const MAX_ACTIVE_SHOWN = 5;
 
 function Team({ team, role }) {
+  const [logoFailed, setLogoFailed] = useState(false);
+  const showLogo = team.avatar && !logoFailed;
+
   return (
     <div className={`team team-${role}`}>
+      {showLogo ? (
+        <img
+          className="team-logo"
+          src={team.avatar}
+          alt=""
+          onError={() => setLogoFailed(true)}
+        />
+      ) : (
+        <div className="team-logo team-logo-fallback">{initials(team.name)}</div>
+      )}
       <div className="team-name">{team.name}</div>
       {team.manager && <div className="team-manager">{team.manager}</div>}
       <div className="team-score">{team.score.toFixed(2)}</div>
@@ -18,15 +32,19 @@ function Team({ team, role }) {
 
 function ActivePlayerRow({ player, listRef }) {
   const [photoFailed, setPhotoFailed] = useState(false);
-  const showPhoto = player.photo && !photoFailed;
+  // Defenses don't have individual headshots - show their NFL team's crest
+  // instead of a broken player-photo URL.
+  const isDefense = player.position === 'DEF';
+  const photoUrl = isDefense ? nflTeamLogoUrl(player.nflTeam) : player.photo;
+  const showPhoto = photoUrl && !photoFailed;
   const statLine = formatStatLine(player);
 
   return (
     <li ref={listRef}>
       {showPhoto ? (
         <img
-          className="active-player-photo"
-          src={player.photo}
+          className={`active-player-photo${isDefense ? ' active-player-photo-defense' : ''}`}
+          src={photoUrl}
           alt=""
           onError={() => setPhotoFailed(true)}
         />

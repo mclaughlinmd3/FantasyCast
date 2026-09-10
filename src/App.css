@@ -189,6 +189,26 @@
   text-align: center;
 }
 
+.team-logo {
+  width: clamp(2.6rem, 4.2vw, 4rem);
+  height: clamp(2.6rem, 4.2vw, 4rem);
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg);
+  border: 1px solid var(--panel-border);
+  margin: 0 auto 0.4vh;
+  display: block;
+}
+
+.team-logo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.9rem, 1.3vw, 1.2rem);
+  font-weight: 700;
+  color: var(--text);
+}
+
 .team-name {
   font-weight: 700;
   font-size: clamp(1.15rem, 2vw, 1.8rem);
@@ -274,6 +294,15 @@
   background: var(--bg);
   border: 1px solid var(--panel-border);
   flex-shrink: 0;
+}
+
+.active-player-photo-defense {
+  /* NFL crests are shield-shaped on a transparent background, not
+     face-filling square photos - contain (not cover) avoids cropping them,
+     and a light backing keeps darker crests readable. */
+  object-fit: contain;
+  background: #f4f4f4;
+  padding: 0.2rem;
 }
 
 .active-player-photo-fallback {

@@ -132,7 +132,15 @@ load), name, live points, and - for Sleeper players only - a short
 position-aware stat line (e.g. "8 REC · 112 YD · 1 TD" for a receiver,
 "267 YD · 2 TD · 1 INT" for a QB). ESPN doesn't get a stat line for the
 same reason it doesn't get play-type headlines (see below); it still
-shows photo/name/points.
+shows photo/name/points. Team defenses (DEF) don't have individual
+headshots, so they show their NFL team's crest instead (from ESPN's
+public logo CDN, unauthenticated - independent of which platform the
+defense's league is on).
+
+Each team also shows its actual fantasy team logo/avatar next to its
+name (the grid card and the matchup summary screen) - Sleeper's
+user-uploaded avatar, or ESPN's team logo - falling back to the team's
+initials if it doesn't have one set or the image fails to load.
 
 **Before the season starts** there's nothing to show here - real players
 only count as "active" once their actual NFL game is underway, so this

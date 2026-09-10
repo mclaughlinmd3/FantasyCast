@@ -1,13 +1,27 @@
+import { useState } from 'react';
 import { getMatchupRoles, orderTeamsForDisplay } from '../teamRoles.js';
+import { initials } from '../initials.js';
 
 function stillToPlay(team) {
   return team.starters.filter((p) => p.projected - p.live > 0);
 }
 
 function TeamColumn({ team, role }) {
+  const [logoFailed, setLogoFailed] = useState(false);
+  const showLogo = team.avatar && !logoFailed;
   const remaining = stillToPlay(team);
   return (
     <div className={`summary-team-col team-${role}`}>
+      {showLogo ? (
+        <img
+          className="team-logo"
+          src={team.avatar}
+          alt=""
+          onError={() => setLogoFailed(true)}
+        />
+      ) : (
+        <div className="team-logo team-logo-fallback">{initials(team.name)}</div>
+      )}
       <div className="summary-team-name">{team.name}</div>
       <div className="summary-team-score">{team.score.toFixed(2)}</div>
       <div className="summary-remaining-label">Still to play</div>
