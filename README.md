@@ -182,10 +182,24 @@ by the threshold (default 4, see below) queues an event - except that for
 QB/RB/WR/TE, routine yardage/reception accumulation (no touchdown or
 turnover involved) needs *double* the threshold to queue, so a 1-point completion
 or a 10-yard carry doesn't trigger a full-screen takeover the way an
-actual touchdown does. This only applies to Sleeper players, since it
-relies on the same raw per-category stats used for play-type detection
-(see below) - TDs, turnovers, and defensive/special-teams plays always
-use the normal threshold, on any platform. When the grid is idle, the
+actual touchdown does.
+
+On top of that, a handful of specific plays always queue an event
+regardless of how small the point swing is: any catch over 15 yards, any
+run over 9 yards, any completed pass over 10 yards, and any first down.
+These are approximated from the change in a raw stat category between
+two polls (Sleeper reports cumulative totals, not individual plays), so
+two smaller plays of the same type landing in the same poll window read
+as one combined value rather than two separate ones - a reasonable
+proxy, not exact play-by-play detection. First-down stats in particular
+aren't as consistently documented as the scoring categories, so that
+trigger may not fire for every league.
+
+All of this - the routine-yardage double threshold and the explicit
+play triggers alike - only applies to Sleeper players, since it relies
+on the same raw per-category stats used for play-type detection (see
+below). TDs, turnovers, and defensive/special-teams plays always use the
+normal threshold, on any platform. When the grid is idle, the
 highest-point-swing event in the queue takes over the screen:
 
 1. **~5s player takeover** - a punchy pop-in animation, play-type
