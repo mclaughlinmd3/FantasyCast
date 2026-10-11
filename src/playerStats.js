@@ -10,7 +10,14 @@ function round0(n) {
 
 export function formatStatLine(player) {
   const s = player.rawStats;
-  if (!s) return null;
+  if (!s) {
+    if (player.live > 0) {
+      console.warn(
+        `[stat-line debug] ${player.name} (${player.position}) has ${player.live} live points but no rawStats object at all.`
+      );
+    }
+    return null;
+  }
 
   const touchdowns = round0((s.rec_td || 0) + (s.rush_td || 0) + (s.pass_td || 0));
   const twoPointConversions = round0((s.pass_2pt || 0) + (s.rush_2pt || 0) + (s.rec_2pt || 0));
@@ -53,5 +60,17 @@ export function formatStatLine(player) {
   // thing that happened for them this poll.
   if (twoPointConversions) parts.push(`${twoPointConversions} 2PT`);
 
-  return parts.length > 0 ? parts.join(' · ') : null;
+  const result = parts.length > 0 ? parts.join(' · ') : null;
+
+  // Temporary diagnostic: if a player clearly has points but we still
+  // produced nothing, log the actual rawStats shape so the real Sleeper
+  // field names can be checked against what this file assumes they are.
+  if (!result && player.live > 0) {
+    console.warn(
+      `[stat-line debug] ${player.name} (${player.position}) has ${player.live} live points but an empty stat line. rawStats:`,
+      JSON.stringify(s)
+    );
+  }
+
+  return result;
 }
