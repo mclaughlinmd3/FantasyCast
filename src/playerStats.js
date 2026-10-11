@@ -13,6 +13,7 @@ export function formatStatLine(player) {
   if (!s) return null;
 
   const touchdowns = round0((s.rec_td || 0) + (s.rush_td || 0) + (s.pass_td || 0));
+  const twoPointConversions = round0((s.pass_2pt || 0) + (s.rush_2pt || 0) + (s.rec_2pt || 0));
   const parts = [];
 
   switch (player.position) {
@@ -20,17 +21,25 @@ export function formatStatLine(player) {
       if (s.pass_yd) parts.push(`${round0(s.pass_yd)} YD`);
       if (s.pass_td) parts.push(`${round0(s.pass_td)} TD`);
       if (s.pass_int) parts.push(`${round0(s.pass_int)} INT`);
-      if (!s.pass_yd && s.rush_yd) parts.push(`${round0(s.rush_yd)} RUSH YD`);
+      // Previously only shown when the QB hadn't thrown for any yards that
+      // poll, which hid rushing production for any dual-threat QB who did
+      // both (e.g. a scramble/rushing TD alongside a normal passing stat
+      // line) - now always shown when present, independent of passing.
+      if (s.rush_yd) parts.push(`${round0(s.rush_yd)} RUSH YD`);
+      if (s.rush_td) parts.push(`${round0(s.rush_td)} RUSH TD`);
       break;
     case 'RB':
       if (s.rush_yd) parts.push(`${round0(s.rush_yd)} YD`);
       if (s.rec) parts.push(`${round0(s.rec)} REC`);
+      if (s.rec_yd) parts.push(`${round0(s.rec_yd)} REC YD`);
       if (touchdowns) parts.push(`${touchdowns} TD`);
       break;
     case 'WR':
     case 'TE':
       if (s.rec) parts.push(`${round0(s.rec)} REC`);
       if (s.rec_yd) parts.push(`${round0(s.rec_yd)} YD`);
+      // Jet sweeps/end-arounds - uncommon but not rare enough to ignore.
+      if (s.rush_yd) parts.push(`${round0(s.rush_yd)} RUSH YD`);
       if (touchdowns) parts.push(`${touchdowns} TD`);
       break;
     case 'K':
@@ -40,11 +49,18 @@ export function formatStatLine(player) {
     case 'DEF':
       if (s.sack) parts.push(`${round0(s.sack)} SACK`);
       if (s.int) parts.push(`${round0(s.int)} INT`);
+      if (s.fum_rec) parts.push(`${round0(s.fum_rec)} FUM REC`);
       if (s.def_td) parts.push(`${round0(s.def_td)} TD`);
+      if (s.safe) parts.push(`${round0(s.safe)} SAFETY`);
       break;
     default:
       if (touchdowns) parts.push(`${touchdowns} TD`);
   }
+
+  // Leagues that score 2-point conversions can otherwise leave a player
+  // with points on the board but an empty stat line if that was the only
+  // thing that happened for them this poll.
+  if (twoPointConversions) parts.push(`${twoPointConversions} 2PT`);
 
   return parts.length > 0 ? parts.join(' · ') : null;
 }

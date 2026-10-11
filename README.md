@@ -130,12 +130,18 @@ than guessing.
 Each active player shows a photo (falls back to initials if it fails to
 load), name, live points, and - for Sleeper players only - a short
 position-aware stat line (e.g. "8 REC · 112 YD · 1 TD" for a receiver,
-"267 YD · 2 TD · 1 INT" for a QB). ESPN doesn't get a stat line for the
-same reason it doesn't get play-type headlines (see below); it still
-shows photo/name/points. Team defenses (DEF) don't have individual
-headshots, so they show their NFL team's crest instead (from ESPN's
-public logo CDN, unauthenticated - independent of which platform the
-defense's league is on).
+"267 YD · 2 TD · 1 INT" for a QB, plus "RUSH YD"/"RUSH TD" too for a
+dual-threat QB who's also run the ball). ESPN doesn't get a stat line
+for the same reason it doesn't get play-type headlines (see below); it
+still shows photo/name/points. A player can legitimately still show no
+stat line despite having points on the board - most commonly right
+after a play, since live points and the raw per-category stats they're
+built from come from two separate Sleeper endpoints that don't always
+update in the same poll; it should catch up next poll rather than
+staying empty. Team defenses (DEF) don't have individual headshots, so
+they show their NFL team's crest instead (from ESPN's public logo CDN,
+unauthenticated - independent of which platform the defense's league is
+on).
 
 Each team's actual fantasy team logo/avatar shows too - Sleeper's
 user-uploaded avatar, or ESPN's team logo - falling back to the team's
