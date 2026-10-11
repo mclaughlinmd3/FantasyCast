@@ -129,9 +129,10 @@ than guessing.
 
 Each active player shows a photo (falls back to initials if it fails to
 load), name, live points, and - for Sleeper players only - a short
-position-aware stat line (e.g. "8 REC · 112 YD · 1 TD" for a receiver,
-"267 YD · 2 TD · 1 INT" for a QB, plus "RUSH YD"/"RUSH TD" too for a
-dual-threat QB who's also run the ball). ESPN doesn't get a stat line
+position-aware stat line: completions/attempts, TD, and INT for a QB
+(e.g. "10/12 CMP · 2 TD · 1 INT"); yards, receptions, and TDs for an RB
+(e.g. "85 YD · 3 REC · 1 TD"); receptions, yards, and TDs for a WR/TE
+(e.g. "8 REC · 112 YD · 1 TD"). ESPN doesn't get a stat line
 for the same reason it doesn't get play-type headlines (see below); it
 still shows photo/name/points. A player can legitimately still show no
 stat line despite having points on the board - most commonly right

@@ -18,28 +18,19 @@ export function formatStatLine(player) {
 
   switch (player.position) {
     case 'QB':
-      if (s.pass_yd) parts.push(`${round0(s.pass_yd)} YD`);
+      if (s.pass_att != null) parts.push(`${round0(s.pass_cmp || 0)}/${round0(s.pass_att)} CMP`);
       if (s.pass_td) parts.push(`${round0(s.pass_td)} TD`);
       if (s.pass_int) parts.push(`${round0(s.pass_int)} INT`);
-      // Previously only shown when the QB hadn't thrown for any yards that
-      // poll, which hid rushing production for any dual-threat QB who did
-      // both (e.g. a scramble/rushing TD alongside a normal passing stat
-      // line) - now always shown when present, independent of passing.
-      if (s.rush_yd) parts.push(`${round0(s.rush_yd)} RUSH YD`);
-      if (s.rush_td) parts.push(`${round0(s.rush_td)} RUSH TD`);
       break;
     case 'RB':
       if (s.rush_yd) parts.push(`${round0(s.rush_yd)} YD`);
       if (s.rec) parts.push(`${round0(s.rec)} REC`);
-      if (s.rec_yd) parts.push(`${round0(s.rec_yd)} REC YD`);
       if (touchdowns) parts.push(`${touchdowns} TD`);
       break;
     case 'WR':
     case 'TE':
       if (s.rec) parts.push(`${round0(s.rec)} REC`);
       if (s.rec_yd) parts.push(`${round0(s.rec_yd)} YD`);
-      // Jet sweeps/end-arounds - uncommon but not rare enough to ignore.
-      if (s.rush_yd) parts.push(`${round0(s.rush_yd)} RUSH YD`);
       if (touchdowns) parts.push(`${touchdowns} TD`);
       break;
     case 'K':
